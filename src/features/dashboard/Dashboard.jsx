@@ -9,9 +9,15 @@ import Favorites from '../habits/Favorites';
 import ProfileSettings from './ProfileSettings';
 import CrystalGarden from './CrystalGarden';
 import History from '../habits/History';
+import HabitExplorer from '../habits/HabitExplorer';
+import RoutineDetail from '../habits/RoutineDetail';
+import StatsDetails from './StatsDetails';
+import { BarChart3 } from 'lucide-react';
 
 export default function Dashboard({ user, onLogout }) {
-    const [activeTab, setActiveTab] = useState('generate');
+    const [activeTab, setActiveTab] = useState('explore');
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedRoutine, setSelectedRoutine] = useState(null);
     const [isAICoachOpen, setIsAICoachOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [localUser, setLocalUser] = useState(user);
@@ -37,13 +43,13 @@ export default function Dashboard({ user, onLogout }) {
             <div className="w-full relative px-2 mb-6">
                 <div className="flex gap-2 bg-slate-800/40 rounded-xl p-1 overflow-x-auto hide-scrollbar snap-x">
                     <button
-                        onClick={() => setActiveTab('generate')}
-                        className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'generate'
+                        onClick={() => { setActiveTab('explore'); setSelectedCategory(null); }}
+                        className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'explore'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
                             }`}
                     >
-                        <Target size={16} /> Generar
+                        <Target size={16} /> Explorar
                     </button>
                     <button
                         onClick={() => setActiveTab('challenge')}
@@ -73,13 +79,13 @@ export default function Dashboard({ user, onLogout }) {
                         <Gem size={16} /> Jardín
                     </button>
                     <button
-                        onClick={() => setActiveTab('history')}
-                        className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'history'
+                        onClick={() => setActiveTab('stats')}
+                        className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'stats'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
                             }`}
                     >
-                        <Clock size={16} /> Historial
+                        <BarChart3 size={16} /> Progreso
                     </button>
                     <button
                         onClick={() => setIsAICoachOpen(true)}
@@ -112,12 +118,38 @@ export default function Dashboard({ user, onLogout }) {
             />
 
             {/* Tab Content */}
-            <div className="w-full animate-slide-up pb-20">
-                {activeTab === 'generate' && <HabitGenerator />}
-                {activeTab === 'challenge' && <DailyChallenge />}
-                {activeTab === 'favorites' && <Favorites />}
-                {activeTab === 'garden' && <CrystalGarden />}
-                {activeTab === 'history' && <History />}
+            <div className={`w-full animate-slide-up ${selectedRoutine ? 'pb-0' : 'pb-20'}`}>
+                {activeTab === 'explore' && !selectedCategory && !selectedRoutine && (
+                    <HabitExplorer
+                        onSelectCategory={(cat) => setSelectedCategory(cat)}
+                        onSelectRoutine={(routine) => setSelectedRoutine(routine)}
+                    />
+                )}
+                {activeTab === 'explore' && selectedRoutine && (
+                    <RoutineDetail onBack={() => setSelectedRoutine(null)} />
+                )}
+                {activeTab === 'explore' && selectedCategory && !selectedRoutine && (
+                    <div className="px-4">
+                        <button
+                            onClick={() => setSelectedCategory(null)}
+                            className="mb-4 text-indigo-400 text-xs font-bold uppercase flex items-center gap-1"
+                        >
+                            ← Volver a Explorar
+                        </button>
+                        <HabitGenerator initialCategory={selectedCategory} />
+                    </div>
+                )}
+                {!selectedRoutine && activeTab === 'challenge' && <DailyChallenge />}
+                {!selectedRoutine && activeTab === 'favorites' && <Favorites />}
+                {!selectedRoutine && activeTab === 'garden' && <CrystalGarden />}
+                {!selectedRoutine && activeTab === 'stats' && (
+                    <StatsDetails stats={{
+                        streak: localUser.streak || 0,
+                        totalMinutes: (localUser.total_completed || 0) * 3, // Approx 3m per habit
+                        points: localUser.xp || 0
+                    }} />
+                )}
+                {!selectedRoutine && activeTab === 'stats' && <History />}
             </div>
         </div>
     );

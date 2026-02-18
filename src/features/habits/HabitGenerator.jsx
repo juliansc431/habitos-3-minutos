@@ -114,15 +114,25 @@ const MOCK_HABITS = [
     { category: 'productivity', emoji: '🎒', text: 'Organiza tu bolso o mochila', duration: '3 min', seconds: 180 },
 ];
 
-export default function HabitGenerator() {
-    const [selectedCategory, setSelectedCategory] = useState('all');
+export default function HabitGenerator({ initialCategory = 'all' }) {
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
     const [currentHabit, setCurrentHabit] = useState(null);
     const [isTimerActive, setIsTimerActive] = useState(false);
     const [timeLeft, setTimeLeft] = useState(180);
     const [showCompletion, setShowCompletion] = useState(false);
     const [completionData, setCompletionData] = useState({ xp: 0, streak: 0 });
 
+    const [selectedColor, setSelectedColor] = useState('indigo');
+    const [timeOfDay, setTimeOfDay] = useState('any');
+
     const { completeHabit, isCompleting } = useHabitCompletion();
+
+    // Auto-generate habit if initialCategory is provided
+    useEffect(() => {
+        if (initialCategory !== 'all') {
+            generateHabit();
+        }
+    }, [initialCategory]);
 
     // Timer logic
     useEffect(() => {
@@ -193,21 +203,23 @@ export default function HabitGenerator() {
                 <div className="absolute top-2 right-2 bg-black/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-tighter">AI PRO</div>
             </button>
 
-            {/* Categories */}
-            <div className="grid grid-cols-2 gap-2">
-                {CATEGORIES.map(cat => (
-                    <button
-                        key={cat.id}
-                        onClick={() => handleCategorySelect(cat.id)}
-                        className={`py-3.5 px-3 rounded-2xl font-bold text-sm text-center transition-all border-2 ${selectedCategory === cat.id
-                            ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
-                            : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200'
-                            }`}
-                    >
-                        {cat.label}
-                    </button>
-                ))}
-            </div>
+            {/* Categories - Only show if not coming from explorer */}
+            {initialCategory === 'all' && (
+                <div className="grid grid-cols-2 gap-2">
+                    {CATEGORIES.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => handleCategorySelect(cat.id)}
+                            className={`py-3.5 px-3 rounded-2xl font-bold text-sm text-center transition-all border-2 ${selectedCategory === cat.id
+                                ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
+                                : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                                }`}
+                        >
+                            {cat.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Habit Card Display */}
             <div className="relative group">
@@ -231,7 +243,7 @@ export default function HabitGenerator() {
                                                 setTimeLeft(m * 60);
                                                 setCurrentHabit(prev => ({ ...prev, duration: `${m} min`, seconds: m * 60 }));
                                             }}
-                                            className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${(timeLeft / 60) === m
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${(timeLeft / 60) === m
                                                 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
                                                 : 'text-slate-500 hover:text-slate-300'
                                                 }`}
@@ -239,6 +251,45 @@ export default function HabitGenerator() {
                                             {m} MIN
                                         </button>
                                     ))}
+                                </div>
+
+                                {/* Advanced Personalization (from User Image) */}
+                                <div className="w-full space-y-4 pt-4 border-t border-white/5 mt-2 text-center">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Color del tema</span>
+                                        <div className="flex gap-3">
+                                            {['indigo', 'emerald', 'rose', 'orange', 'blue'].map(c => (
+                                                <button
+                                                    key={c}
+                                                    onClick={() => setSelectedColor(c)}
+                                                    className={`w-5 h-5 rounded-full transition-transform ${selectedColor === c ? 'scale-125 ring-2 ring-white/50' : 'opacity-40 hover:opacity-100'}`}
+                                                    style={{ backgroundColor: c === 'indigo' ? '#6366f1' : c === 'emerald' ? '#10b981' : c === 'rose' ? '#f43f5e' : c === 'orange' ? '#f59e0b' : '#3b82f6' }}
+                                                ></button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Momento del día</span>
+                                        <div className="grid grid-cols-2 gap-2 max-w-[280px] mx-auto">
+                                            <button
+                                                onClick={() => setTimeOfDay('morning')}
+                                                className={`py-2 rounded-xl text-[10px] font-black transition-all border ${timeOfDay === 'morning' ? 'bg-white/10 border-white/20 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 uppercase'}`}
+                                            >🌅 Mañana</button>
+                                            <button
+                                                onClick={() => setTimeOfDay('afternoon')}
+                                                className={`py-2 rounded-xl text-[10px] font-black transition-all border ${timeOfDay === 'afternoon' ? 'bg-white/10 border-white/20 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 uppercase'}`}
+                                            >☀️ Tarde</button>
+                                            <button
+                                                onClick={() => setTimeOfDay('night')}
+                                                className={`py-2 rounded-xl text-[10px] font-black transition-all border ${timeOfDay === 'night' ? 'bg-white/10 border-white/20 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 uppercase'}`}
+                                            >🌙 Noche</button>
+                                            <button
+                                                onClick={() => setTimeOfDay('any')}
+                                                className={`py-2 rounded-xl text-[10px] font-black transition-all border ${timeOfDay === 'any' ? 'bg-white/10 border-white/20 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 uppercase'}`}
+                                            >✨ Libre</button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <button

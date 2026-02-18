@@ -26,6 +26,12 @@ export default function Dashboard({ user, onLogout }) {
     useEffect(() => {
         if (user) setLocalUser(user);
     }, [user]);
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setSelectedCategory(null);
+        setSelectedRoutine(null);
+    };
+
     return (
         <div className="w-full max-w-md flex flex-col items-center relative">
             <Header
@@ -43,7 +49,7 @@ export default function Dashboard({ user, onLogout }) {
             <div className="w-full relative px-2 mb-6">
                 <div className="flex gap-2 bg-slate-800/40 rounded-xl p-1 overflow-x-auto hide-scrollbar snap-x">
                     <button
-                        onClick={() => { setActiveTab('explore'); setSelectedCategory(null); }}
+                        onClick={() => handleTabChange('explore')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'explore'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
@@ -52,7 +58,7 @@ export default function Dashboard({ user, onLogout }) {
                         <Target size={16} /> Explorar
                     </button>
                     <button
-                        onClick={() => setActiveTab('challenge')}
+                        onClick={() => handleTabChange('challenge')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'challenge'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
@@ -61,7 +67,7 @@ export default function Dashboard({ user, onLogout }) {
                         <Flame size={16} /> Reto
                     </button>
                     <button
-                        onClick={() => setActiveTab('favorites')}
+                        onClick={() => handleTabChange('favorites')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'favorites'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
@@ -70,7 +76,7 @@ export default function Dashboard({ user, onLogout }) {
                         <Heart size={16} /> Favoritos
                     </button>
                     <button
-                        onClick={() => setActiveTab('garden')}
+                        onClick={() => handleTabChange('garden')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'garden'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
@@ -79,7 +85,7 @@ export default function Dashboard({ user, onLogout }) {
                         <Gem size={16} /> Jardín
                     </button>
                     <button
-                        onClick={() => setActiveTab('stats')}
+                        onClick={() => handleTabChange('stats')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'stats'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
                             : 'text-slate-500 hover:text-slate-300'
@@ -145,17 +151,17 @@ export default function Dashboard({ user, onLogout }) {
                         <HabitGenerator initialCategory={selectedCategory} />
                     </div>
                 )}
-                {!selectedRoutine && activeTab === 'challenge' && <DailyChallenge />}
-                {!selectedRoutine && activeTab === 'favorites' && <Favorites />}
-                {!selectedRoutine && activeTab === 'garden' && <CrystalGarden />}
-                {!selectedRoutine && activeTab === 'stats' && (
+                {activeTab === 'challenge' && <DailyChallenge />}
+                {activeTab === 'favorites' && <Favorites />}
+                {activeTab === 'garden' && <CrystalGarden />}
+                {activeTab === 'stats' && (
                     <StatsDetails stats={{
                         streak: localUser.streak || 0,
                         totalMinutes: (localUser.total_completed || 0) * 3, // Approx 3m per habit
                         points: localUser.xp || 0
                     }} />
                 )}
-                {!selectedRoutine && activeTab === 'stats' && <History />}
+                {activeTab === 'stats' && <History />}
             </div>
         </div>
     );

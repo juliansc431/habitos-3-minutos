@@ -43,7 +43,7 @@ const SLEEP_ROUTINE = {
     ]
 };
 
-export default function RoutineDetail({ onBack }) {
+export default function RoutineDetail({ onBack, onStart }) {
     return (
         <div className="w-full min-h-screen bg-[#0a0a14] animate-slide-up pb-20">
             {/* Header / Image Area */}
@@ -110,7 +110,10 @@ export default function RoutineDetail({ onBack }) {
 
             {/* CTA Button */}
             <div className="fixed bottom-6 left-6 right-6 z-50">
-                <button className="btn-primary w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-indigo-600/40 active:scale-95">
+                <button
+                    onClick={onStart}
+                    className="btn-primary w-full py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-indigo-600/40 active:scale-95"
+                >
                     Empezar este plan científico
                 </button>
             </div>

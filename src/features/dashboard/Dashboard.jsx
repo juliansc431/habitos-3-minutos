@@ -126,7 +126,13 @@ export default function Dashboard({ user, onLogout }) {
                     />
                 )}
                 {activeTab === 'explore' && selectedRoutine && (
-                    <RoutineDetail onBack={() => setSelectedRoutine(null)} />
+                    <RoutineDetail
+                        onBack={() => setSelectedRoutine(null)}
+                        onStart={() => {
+                            setSelectedCategory('calm');
+                            setSelectedRoutine(null);
+                        }}
+                    />
                 )}
                 {activeTab === 'explore' && selectedCategory && !selectedRoutine && (
                     <div className="px-4">

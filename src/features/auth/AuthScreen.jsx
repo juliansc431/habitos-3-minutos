@@ -172,8 +172,8 @@ export default function AuthScreen() {
                 </button>
             </div>
 
-            <p className="mt-8 text-center text-xs text-slate-600 font-medium">
-                🔒 Tus datos están seguros y encriptados
+            <p className="mt-8 text-center text-[10px] text-slate-700 font-medium uppercase tracking-widest opacity-50">
+                v1.0.2 • 🔒 Datos Encriptados
             </p>
         </div>
     );

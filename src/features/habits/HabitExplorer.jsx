@@ -45,7 +45,7 @@ const EXPLORE_CATEGORIES = [
 
 export default function HabitExplorer({ onSelectCategory, onSelectRoutine }) {
     return (
-        <div className="w-full space-y-6 px-4 py-6">
+        <div className="w-full space-y-6 px-4 py-6 animate-slide-up">
             <div className="space-y-1 mb-8">
                 <h2 className="text-white text-2xl font-black uppercase tracking-tight">Explora un estilo de vida mejor</h2>
                 <div className="h-1 w-12 bg-indigo-500 rounded-full"></div>

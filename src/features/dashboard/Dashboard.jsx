@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import StatsCard from './StatsCard';
-import { Target, Flame, Heart, MessageCircle, Gem, Clock } from 'lucide-react';
+import { Target, Flame, Heart, MessageCircle, Gem, Clock, BarChart3 } from 'lucide-react';
 import HabitGenerator from '../habits/HabitGenerator';
 import DailyChallenge from '../habits/DailyChallenge';
 import AICoach from './AICoach';
@@ -12,7 +12,6 @@ import History from '../habits/History';
 import HabitExplorer from '../habits/HabitExplorer';
 import RoutineDetail from '../habits/RoutineDetail';
 import StatsDetails from './StatsDetails';
-import { BarChart3 } from 'lucide-react';
 
 export default function Dashboard({ user, onLogout }) {
     const [activeTab, setActiveTab] = useState('explore');
@@ -123,8 +122,8 @@ export default function Dashboard({ user, onLogout }) {
                 onUpdate={(updated) => setLocalUser(updated)}
             />
 
-            {/* Tab Content */}
-            <div className={`w-full animate-slide-up ${selectedRoutine ? 'pb-0' : 'pb-20'}`}>
+            {/* Tab Content - Key forces fresh mount and animation */}
+            <div key={activeTab + (selectedRoutine ? '_routine' : '')} className={`w-full ${selectedRoutine ? 'pb-0' : 'pb-20'}`}>
                 {activeTab === 'explore' && !selectedCategory && !selectedRoutine && (
                     <HabitExplorer
                         onSelectCategory={(cat) => setSelectedCategory(cat)}
@@ -141,7 +140,7 @@ export default function Dashboard({ user, onLogout }) {
                     />
                 )}
                 {activeTab === 'explore' && selectedCategory && !selectedRoutine && (
-                    <div className="px-4">
+                    <div className="px-4 animate-slide-up">
                         <button
                             onClick={() => setSelectedCategory(null)}
                             className="mb-4 text-indigo-400 text-xs font-bold uppercase flex items-center gap-1"
@@ -155,13 +154,15 @@ export default function Dashboard({ user, onLogout }) {
                 {activeTab === 'favorites' && <Favorites />}
                 {activeTab === 'garden' && <CrystalGarden />}
                 {activeTab === 'stats' && (
-                    <StatsDetails stats={{
-                        streak: localUser.streak || 0,
-                        totalMinutes: (localUser.total_completed || 0) * 3, // Approx 3m per habit
-                        points: localUser.xp || 0
-                    }} />
+                    <div className="space-y-6">
+                        <StatsDetails stats={{
+                            streak: localUser.streak || 0,
+                            totalMinutes: (localUser.total_completed || 0) * 3, // Approx 3m per habit
+                            points: localUser.xp || 0
+                        }} />
+                        <History />
+                    </div>
                 )}
-                {activeTab === 'stats' && <History />}
             </div>
         </div>
     );

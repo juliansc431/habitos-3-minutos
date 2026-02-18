@@ -44,18 +44,40 @@ export default function AuthScreen() {
                 if (regErr) throw regErr;
 
                 if (data?.user && !data?.session) {
-                    setSuccess('¡Registro exitoso! Por favor revisa tu correo para confirmar.');
+                    setSuccess('¡Casi listo! Revisa tu correo electrónico para confirmar tu cuenta y poder entrar.');
+                    // Don't clear form entirely, but maybe reset passwords
+                    setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
                 }
             }
         } catch (err) {
             console.error('Auth breakdown:', err);
-            // Handle Supabase error objects safely
             const msg = err.message || err.error_description || 'Error inesperado';
             setError(msg);
         } finally {
             setLoading(false);
         }
     };
+
+    if (success && !isLogin) {
+        return (
+            <div className="w-full max-w-md pt-8 animate-pop">
+                <div className="glass-panel rounded-[2rem] p-10 text-center shadow-2xl border border-white/5">
+                    <div className="text-6xl mb-6">📧</div>
+                    <h2 className="text-2xl font-bold mb-4 text-white">¡Revisa tu correo!</h2>
+                    <p className="text-slate-400 mb-8 leading-relaxed">
+                        Hemos enviado un enlace de confirmación a <span className="text-indigo-400 font-bold">{formData.email}</span>.
+                        Por favor, confírmalo para poder empezar a crear tus hábitos.
+                    </p>
+                    <button
+                        onClick={() => { setSuccess(''); setIsLogin(true); }}
+                        className="btn-primary w-full py-4 rounded-2xl font-bold text-white shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"
+                    >
+                        Volver al Inicio de Sesión
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div key="auth-container" className="w-full max-w-md pt-8">
@@ -125,13 +147,6 @@ export default function AuthScreen() {
                         <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-sm flex gap-2 animate-pop">
                             <span className="shrink-0">⚠️</span>
                             <span>{error}</span>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl text-sm flex gap-2 animate-pop">
-                            <span className="shrink-0">✅</span>
-                            <span>{success}</span>
                         </div>
                     )}
 

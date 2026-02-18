@@ -190,28 +190,28 @@ export default function HabitGenerator({ initialCategory = 'all' }) {
                     <div className="relative glass-panel rounded-[2rem] p-8 min-h-[220px] flex flex-col items-center justify-center border border-white/10 animate-pop">
                         {isCustomMode && !isTimerActive ? (
                             <div className="w-full space-y-6 flex flex-col items-center">
-                                <div className="flex gap-4 w-full">
+                                <div className="flex gap-3 w-full items-center">
                                     <input
                                         type="text"
                                         value={customEmoji}
                                         onChange={(e) => setCustomEmoji(e.target.value)}
-                                        className="w-16 h-16 text-3xl flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 text-center focus:border-indigo-500 outline-none"
+                                        className="w-12 h-12 md:w-16 md:h-16 text-2xl md:text-3xl flex-none flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 text-center focus:border-indigo-500 outline-none"
                                         placeholder="✍️"
                                     />
                                     <input
                                         type="text"
                                         value={customText}
                                         onChange={(e) => setCustomText(e.target.value)}
-                                        className="flex-1 bg-white/5 rounded-2xl border border-white/10 px-4 py-2 text-white font-bold placeholder:text-slate-600 focus:border-indigo-500 outline-none"
+                                        className="flex-1 min-w-0 bg-white/5 rounded-2xl border border-white/10 px-4 py-3 md:py-4 text-white font-bold placeholder:text-slate-600 focus:border-indigo-500 outline-none text-sm md:text-base"
                                         placeholder="¿Qué vas a lograr hoy?"
                                     />
                                 </div>
-                                <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="flex gap-1 md:gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
                                     {[1, 3, 5, 10, 20].map((m) => (
                                         <button
                                             key={m}
                                             onClick={() => setTimeLeft(m * 60)}
-                                            className={`px-3 py-2 rounded-xl text-[10px] font-black transition-all ${(timeLeft / 60) === m
+                                            className={`px-2.5 md:px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-black transition-all ${(timeLeft / 60) === m
                                                 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
                                                 : 'text-slate-500 hover:text-slate-300'
                                                 }`}

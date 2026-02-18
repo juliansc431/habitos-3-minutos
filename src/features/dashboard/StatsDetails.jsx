@@ -1,4 +1,4 @@
-import { BarChart3, TrendingUp, Calendar, Clock } from 'lucide-react';
+import { BarChart3, TrendingUp, Calendar, Clock, Award } from 'lucide-react';
 
 const WEEK_DATA = [
     { day: 'D', value: 40, active: false },

@@ -5,113 +5,53 @@ import CompletionModal from './CompletionModal';
 
 const CATEGORIES = [
     { id: 'all', label: '🎲 Todas', color: 'bg-indigo-500/15 text-white' },
-    { id: 'calm', label: '🧘 Calma', color: 'bg-slate-800/60 text-white' },
+    { id: 'essential', label: '✨ Esenciales', color: 'bg-slate-800/60 text-white' },
     { id: 'energy', label: '💪 Energía', color: 'bg-slate-800/60 text-white' },
-    { id: 'focus', label: '🧠 Enfoque', color: 'bg-slate-800/60 text-white' },
-    { id: 'selfcare', label: '❤️ Amor propio', color: 'bg-slate-800/60 text-white' },
-    { id: 'productivity', label: '🚀 Productividad', color: 'bg-slate-800/60 text-white' },
+    { id: 'health', label: '🥦 Saludable', color: 'bg-slate-800/60 text-white' },
+    { id: 'calm', label: '🧘 Calma', color: 'bg-slate-800/60 text-white' },
+    { id: 'ordered', label: '🚀 Orden', color: 'bg-slate-800/60 text-white' },
 ];
 
 const MOCK_HABITS = [
     // Calma (calm)
     { category: 'calm', emoji: '🧘', text: 'Haz 3 respiraciones profundas', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '💧', text: 'Bebe un vaso de agua lentamente', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '🧱', text: 'Haz un escaneo corporal rápido', duration: '2 min', seconds: 120 },
     { category: 'calm', emoji: '👁️', text: 'Cierra los ojos y cuenta 10 respiraciones', duration: '1 min', seconds: 60 },
     { category: 'calm', emoji: '🎵', text: 'Escucha una canción relajante', duration: '3 min', seconds: 180 },
-    { category: 'calm', emoji: '✍️', text: 'Escribe un pensamiento que te preocupe y suéltalo', duration: '2 min', seconds: 120 },
-    { category: 'calm', emoji: '🦒', text: 'Haz un estiramiento de cuello suave', duration: '1 min', seconds: 60 },
     { category: 'calm', emoji: '🌿', text: 'Observa una planta o dibujo por 1 minuto', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '☁️', text: 'Imagina un lugar tranquilo', duration: '2 min', seconds: 120 },
-    { category: 'calm', emoji: '🗣️', text: 'Repite un mantra positivo (ej. "Estoy en paz")', duration: '1 min', seconds: 60 },
+    { category: 'calm', emoji: '🗣️', text: 'Repite un mantra positivo', duration: '1 min', seconds: 60 },
     { category: 'calm', emoji: '💆', text: 'Masajea tus sienes suavemente', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '📵', text: 'Apaga las notificaciones por 5 minutos', duration: '5 min', seconds: 300 },
-    { category: 'calm', emoji: '🎈', text: 'Haz 5 respiraciones abdominales profundas', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '🧶', text: 'Siente la textura de un objeto cercano', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '🕯️', text: 'Visualiza una luz cálida recorriendo tu cuerpo', duration: '3 min', seconds: 180 },
-    { category: 'calm', emoji: '😊', text: 'Sonríe ligeramente frente al espejo', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '🧊', text: 'Bebe un sorbo de agua sintiendo su frescura', duration: '1 min', seconds: 60 },
-    { category: 'calm', emoji: '🔍', text: 'Nombra 3 cosas que ves en este momento', duration: '1 min', seconds: 60 },
 
     // Energía (energy)
     { category: 'energy', emoji: '🚶', text: 'Estira las piernas y camina un poco', duration: '3 min', seconds: 180 },
-    { category: 'energy', emoji: '⚡', text: 'Haz 10 saltos de tijera (jumping jacks)', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🌞', text: 'Mira al sol o a la luz natural del día', duration: '2 min', seconds: 120 },
+    { category: 'energy', emoji: '⚡', text: 'Haz 10 saltos de tijera', duration: '1 min', seconds: 60 },
     { category: 'energy', emoji: '🏋️', text: 'Haz 15 sentadillas rápidas', duration: '2 min', seconds: 120 },
-    { category: 'energy', emoji: '💃', text: 'Pon música animada y baila un poco', duration: '3 min', seconds: 180 },
-    { category: 'energy', emoji: '❄️', text: 'Lávate la cara con agua fría', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🪜', text: 'Sube y baja una escalera o camina rápido', duration: '3 min', seconds: 180 },
-    { category: 'energy', emoji: '🙆', text: 'Estira los brazos hacia el techo con fuerza', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '💪', text: 'Haz 10 flexiones de pecho (o contra la pared)', duration: '2 min', seconds: 120 },
-    { category: 'energy', emoji: '🌬️', text: 'Respira rápido y rítmicamente por 30 segundos', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '👋', text: 'Saluda a alguien con entusiasmo', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🐰', text: 'Da 20 saltos pequeños en el sitio', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🪟', text: 'Abre una ventana y respira aire fresco', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🔄', text: 'Haz círculos con los hombros hacia atrás', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🦶', text: 'Tócate las puntas de los pies y sube rápido', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '✊', text: 'Aprieta y suelta tus puños varias veces', duration: '1 min', seconds: 60 },
-    { category: 'energy', emoji: '🏛️', text: 'Camina enérgicamente por la habitación', duration: '2 min', seconds: 120 },
-    { category: 'energy', emoji: '🎯', text: 'Visualiza tu meta más grande por 1 minuto', duration: '1 min', seconds: 60 },
+    { category: 'energy', emoji: '💃', text: 'Pon música animada y baila', duration: '2 min', seconds: 120 },
+    { category: 'energy', emoji: '🙆', text: 'Estira los brazos hacia el techo', duration: '1 min', seconds: 60 },
+    { category: 'energy', emoji: '💪', text: 'Haz 10 flexiones de pecho', duration: '2 min', seconds: 120 },
 
-    // Enfoque (focus)
-    { category: 'focus', emoji: '👀', text: 'Descansa la vista mirando un punto lejano', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '🔇', text: 'Cierra los ojos y escucha los sonidos a tu alrededor', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '🖥️', text: 'Organiza 3 iconos de tu escritorio', duration: '2 min', seconds: 120 },
-    { category: 'focus', emoji: '🥇', text: 'Define tu prioridad número uno para hoy', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '📖', text: 'Lee una página de un libro con atención plena', duration: '3 min', seconds: 180 },
-    { category: 'focus', emoji: '🧩', text: 'Resuelve un pequeño acertijo o suma mental', duration: '2 min', seconds: 120 },
-    { category: 'focus', emoji: '🛑', text: 'Mira un objeto fijo por 1 minuto sin distraerte', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '📌', text: 'Escribe tu meta del día en una nota adhesiva', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '🌧️', text: 'Escucha ruido blanco o sonidos de lluvia', duration: '5 min', seconds: 300 },
-    { category: 'focus', emoji: '🧹', text: 'Despeja tu zona de trabajo inmediata', duration: '3 min', seconds: 180 },
-    { category: 'focus', emoji: '📝', text: 'Haz una lista de 3 tareas pequeñas', duration: '2 min', seconds: 120 },
-    { category: 'focus', emoji: '❌', text: 'Cierra todas las pestañas innecesarias', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '⏳', text: 'Técnica Pomodoro: enfócate por 5 minutos', duration: '5 min', seconds: 300 },
-    { category: 'focus', emoji: '📐', text: 'Dibuja un patrón geométrico simple', duration: '2 min', seconds: 120 },
-    { category: 'focus', emoji: '💡', text: 'Memoriza un dato curioso nuevo', duration: '2 min', seconds: 120 },
-    { category: 'focus', emoji: '🏹', text: 'Escribe una intención clara para tu próxima hora', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '📴', text: 'Pon tu teléfono en modo "No molestar"', duration: '1 min', seconds: 60 },
-    { category: 'focus', emoji: '🗺️', text: 'Haz un mapa mental de una idea rápida', duration: '3 min', seconds: 180 },
+    // Esenciales (essential)
+    { category: 'essential', emoji: '💧', text: 'Bebe un vaso de agua lentamente', duration: '1 min', seconds: 60 },
+    { category: 'essential', emoji: '🛌', text: 'Haz tu cama si aún no lo has hecho', duration: '2 min', seconds: 120 },
+    { category: 'essential', emoji: '🦷', text: 'Limpia tu zona de trabajo 2 minutos', duration: '2 min', seconds: 120 },
+    { category: 'essential', emoji: '📓', text: 'Anota tu intención para hoy', duration: '1 min', seconds: 60 },
+    { category: 'essential', emoji: '🧴', text: 'Aplícate crema en las manos', duration: '1 min', seconds: 60 },
+    { category: 'essential', emoji: '🏆', text: 'Recuerda un logro de ayer', duration: '1 min', seconds: 60 },
 
-    // Amor Propio (selfcare)
-    { category: 'selfcare', emoji: '📝', text: 'Escribe 3 cosas por las que estás agradecido', duration: '3 min', seconds: 180 },
-    { category: 'selfcare', emoji: '💖', text: 'Mírate al espejo y dime algo positivo', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '🗣️', text: 'Hazte un cumplido genuino', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '🧴', text: 'Aplícate crema en las manos con cariño', duration: '2 min', seconds: 120 },
-    { category: 'selfcare', emoji: '☕', text: 'Prepara tu bebida favorita con calma', duration: '3 min', seconds: 180 },
-    { category: 'selfcare', emoji: '🌟', text: 'Escribe algo que te guste de tu personalidad', duration: '2 min', seconds: 120 },
-    { category: 'selfcare', emoji: '🛌', text: 'Permítete descansar sin culpa por 2 minutos', duration: '2 min', seconds: 120 },
-    { category: 'selfcare', emoji: '🎧', text: 'Escucha un podcast inspirador', duration: '5 min', seconds: 300 },
-    { category: 'selfcare', emoji: '🕯️', text: 'Rodéate de un aroma que te agrade', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '🧸', text: 'Abraza un cojín o a ti mismo suavemente', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '🏆', text: 'Recuerda un logro reciente, por pequeño que sea', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '📢', text: 'Lee una afirmación positiva en voz alta', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '🎶', text: 'Haz una lista de 3 canciones que te hagan feliz', duration: '2 min', seconds: 120 },
-    { category: 'selfcare', emoji: '🚫', text: 'Date permiso para decir "no" a algo hoy', duration: '1 min', seconds: 60 },
-    { category: 'selfcare', emoji: '📸', text: 'Mira fotos de momentos felices', duration: '3 min', seconds: 180 },
-    { category: 'selfcare', emoji: '👕', text: 'Vístete con algo que te haga sentir bien', duration: '3 min', seconds: 180 },
-    { category: 'selfcare', emoji: '🎁', text: 'Planifica un pequeño premio para el final del día', duration: '2 min', seconds: 120 },
-    { category: 'selfcare', emoji: '🩹', text: 'Acepta una imperfección tuya con ternura', duration: '2 min', seconds: 120 },
+    // Saludable (health)
+    { category: 'health', emoji: '🍏', text: 'Come una pieza de fruta', duration: '3 min', seconds: 180 },
+    { category: 'health', emoji: '🍵', text: 'Prepara un té sin azúcar', duration: '5 min', seconds: 300 },
+    { category: 'health', emoji: '🥗', text: 'Planifica tu menú saludable de mañana', duration: '3 min', seconds: 180 },
+    { category: 'health', emoji: '🥜', text: 'Come un puñado de frutos secos', duration: '2 min', seconds: 120 },
+    { category: 'health', emoji: '🥤', text: 'Bebe 250ml de agua fresca', duration: '1 min', seconds: 60 },
+    { category: 'health', emoji: '🧼', text: 'Lava tus manos con calma y atención', duration: '1 min', seconds: 60 },
 
-    // Productividad (productivity)
-    { category: 'productivity', emoji: '🧹', text: 'Limpia una pequeña área de tu mesa', duration: '3 min', seconds: 180 },
-    { category: 'productivity', emoji: '📅', text: 'Revisa tu próxima tarea importante', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '📧', text: 'Responde ese correo corto que has pospuesto', duration: '3 min', seconds: 180 },
-    { category: 'productivity', emoji: '📥', text: 'Archiva 5 correos antiguos', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '🗓️', text: 'Revisa tu calendario de la semana', duration: '3 min', seconds: 180 },
-    { category: 'productivity', emoji: '👕', text: 'Prepara tu ropa para mañana', duration: '3 min', seconds: 180 },
-    { category: 'productivity', emoji: '🛏️', text: 'Haz tu cama si aún no lo has hecho', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '📱', text: 'Limpia la pantalla de tu móvil o laptop', duration: '1 min', seconds: 60 },
-    { category: 'productivity', emoji: '🗑️', text: 'Tira 3 papeles innecesarios de tu escritorio', duration: '1 min', seconds: 60 },
-    { category: 'productivity', emoji: '📴', text: 'Establece un límite de tiempo para redes sociales', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '💡', text: 'Anota una idea que tengas en mente', duration: '1 min', seconds: 60 },
-    { category: 'productivity', emoji: '🗄️', text: 'Ordena un cajón pequeño', duration: '5 min', seconds: 300 },
-    { category: 'productivity', emoji: '🛒', text: 'Revisa tu lista de compras', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '🍎', text: 'Planifica tus comidas de mañana', duration: '3 min', seconds: 180 },
-    { category: 'productivity', emoji: '⏰', text: 'Configura una alarma importante', duration: '1 min', seconds: 60 },
-    { category: 'productivity', emoji: '⌨️', text: 'Aprende un atajo de teclado nuevo', duration: '2 min', seconds: 120 },
-    { category: 'productivity', emoji: '🖼️', text: 'Borra fotos duplicadas o borrosas', duration: '5 min', seconds: 300 },
-    { category: 'productivity', emoji: '🎒', text: 'Organiza tu bolso o mochila', duration: '3 min', seconds: 180 },
+    // Orden / Productividad (ordered)
+    { category: 'ordered', emoji: '🧹', text: 'Limpia 3 iconos de tu escritorio', duration: '2 min', seconds: 120 },
+    { category: 'ordered', emoji: '📧', text: 'Archiva 5 correos antiguos', duration: '2 min', seconds: 120 },
+    { category: 'ordered', emoji: '📅', text: 'Revisa tu calendario de mañana', duration: '2 min', seconds: 120 },
+    { category: 'ordered', emoji: '📝', text: 'Escribe tu lista de 3 tareas clave', duration: '2 min', seconds: 120 },
+    { category: 'ordered', emoji: '❌', text: 'Cierra pestañas del navegador que no uses', duration: '1 min', seconds: 60 },
+    { category: 'ordered', emoji: '⌛', text: 'Enfoque total Pomodoro: 5 min', duration: '5 min', seconds: 300 },
 ];
 
 export default function HabitGenerator({ initialCategory = 'all' }) {
@@ -203,23 +143,21 @@ export default function HabitGenerator({ initialCategory = 'all' }) {
                 <div className="absolute top-2 right-2 bg-black/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-tighter">AI PRO</div>
             </button>
 
-            {/* Categories - Only show if not coming from explorer */}
-            {initialCategory === 'all' && (
-                <div className="grid grid-cols-2 gap-2">
-                    {CATEGORIES.map(cat => (
-                        <button
-                            key={cat.id}
-                            onClick={() => handleCategorySelect(cat.id)}
-                            className={`py-3.5 px-3 rounded-2xl font-bold text-sm text-center transition-all border-2 ${selectedCategory === cat.id
-                                ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
-                                : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200'
-                                }`}
-                        >
-                            {cat.label}
-                        </button>
-                    ))}
-                </div>
-            )}
+            {/* Categories - Always show for navigation */}
+            <div className="grid grid-cols-2 gap-2">
+                {CATEGORIES.map(cat => (
+                    <button
+                        key={cat.id}
+                        onClick={() => handleCategorySelect(cat.id)}
+                        className={`py-3.5 px-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest text-center transition-all border-2 ${selectedCategory === cat.id
+                            ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
+                            : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                            }`}
+                    >
+                        {cat.label}
+                    </button>
+                ))}
+            </div>
 
             {/* Habit Card Display */}
             <div className="relative group">

@@ -4,9 +4,9 @@ import { useHabitCompletion } from './useHabitCompletion';
 import CompletionModal from './CompletionModal';
 
 const DAILY_CHALLENGES = [
-    { id: 'ch_1', emoji: '📵', text: '30 minutos sin mirar el celular antes de dormir', category: 'focus', xp: 50 },
-    { id: 'ch_2', emoji: '🍎', text: 'Come una fruta o verdura en tu próxima comida', category: 'selfcare', xp: 40 },
-    { id: 'ch_3', emoji: '✍️', text: 'Escribe 3 metas pequeñas para mañana', category: 'productivity', xp: 45 },
+    { id: 'ch_1', emoji: '📵', text: '30 minutos sin mirar el celular antes de dormir', category: 'calm', xp: 50 },
+    { id: 'ch_2', emoji: '🍎', text: 'Come una fruta o verdura en tu próxima comida', category: 'health', xp: 40 },
+    { id: 'ch_3', emoji: '✍️', text: 'Escribe 3 metas pequeñas para mañana', category: 'ordered', xp: 45 },
     { id: 'ch_4', emoji: '🚶', text: 'Da una caminata de 15 minutos en la naturaleza', category: 'energy', xp: 60 },
 ];
 

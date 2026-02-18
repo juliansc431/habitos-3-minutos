@@ -5,11 +5,11 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
 const CATEGORY_EVOLUTION = {
-    calm: { name: 'Calma', icon: '💎', color: 'text-blue-400', glow: 'shadow-blue-500/20' },
-    energy: { name: 'Energía', icon: '🔥', color: 'text-orange-400', glow: 'shadow-orange-500/20' },
-    focus: { name: 'Enfoque', icon: '🔮', color: 'text-purple-400', glow: 'shadow-purple-500/20' },
-    selfcare: { name: 'Amor propio', icon: '🌸', color: 'text-pink-400', glow: 'shadow-pink-500/20' },
-    productivity: { name: 'Productividad', icon: '🚀', color: 'text-emerald-400', glow: 'shadow-emerald-500/20' },
+    essential: { name: 'Esenciales', icon: '✨', color: 'text-rose-400', glow: 'shadow-rose-500/20' },
+    energy: { name: 'Energía', icon: '💪', color: 'text-blue-400', glow: 'shadow-blue-500/20' },
+    health: { name: 'Salud', icon: '🥦', color: 'text-emerald-400', glow: 'shadow-emerald-500/20' },
+    calm: { name: 'Calma', icon: '🧘', color: 'text-indigo-400', glow: 'shadow-indigo-500/20' },
+    ordered: { name: 'Orden', icon: '🚀', color: 'text-orange-400', glow: 'shadow-orange-500/20' },
 };
 
 const getStage = (count) => {

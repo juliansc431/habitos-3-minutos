@@ -49,9 +49,22 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // Mecanismo de seguridad: Si en 8 segundos no hay respuesta, forzamos la carga
+        const failsafe = setTimeout(() => {
+            if (loading) {
+                console.warn('AuthProvider: Failsafe triggered after 8s');
+                setLoading(false);
+            }
+        }, 8000);
+
         // 1. Check active session on mount
         supabase.auth.getSession().then(({ data: { session } }) => {
+            clearTimeout(failsafe);
             fetchProfile(session);
+        }).catch(err => {
+            console.error('Session error:', err);
+            clearTimeout(failsafe);
+            setLoading(false);
         });
 
         // 2. Listen for auth changes
@@ -60,7 +73,10 @@ export const AuthProvider = ({ children }) => {
             fetchProfile(session);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            clearTimeout(failsafe);
+            subscription.unsubscribe();
+        };
     }, []);
 
     const login = (email, password) => {

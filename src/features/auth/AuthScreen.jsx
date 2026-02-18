@@ -83,7 +83,7 @@ export default function AuthScreen() {
         <div key="auth-container" className="w-full max-w-md pt-8">
             <div className="text-center mb-10">
                 <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] mb-4 opacity-70">
-                    Versión Estable v1.0.4 🛡️
+                    Versión Blindada v1.0.5 🛡️
                 </p>
                 <div className="text-6xl mb-4">⚡</div>
                 <h1 className="text-4xl font-bold mb-2 text-white">Micro-Hábitos</h1>

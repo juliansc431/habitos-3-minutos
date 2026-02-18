@@ -77,21 +77,6 @@ export default function HabitExplorer({ onSelectCategory, onSelectRoutine }) {
                 ))}
             </div>
 
-            {/* Scientific Routine Banner */}
-            <div
-                onClick={() => onSelectRoutine?.('sleep')}
-                className="mt-10 overflow-hidden relative rounded-[2rem] bg-indigo-950/40 border border-white/5 p-6 group cursor-pointer active:scale-95 transition-all"
-            >
-                <div className="absolute -right-4 -top-4 w-32 h-32 bg-indigo-500/20 blur-3xl rounded-full"></div>
-                <div className="relative z-10 space-y-3">
-                    <span className="bg-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Recomendado ✨</span>
-                    <h3 className="text-white text-xl font-black leading-tight">Rutina Científica: Ritual del Sueño</h3>
-                    <p className="text-slate-400 text-sm">Optimiza tu descanso con una guía paso a paso de 21 días.</p>
-                    <div className="flex items-center text-indigo-400 font-bold text-sm gap-2 pt-2">
-                        Ver plan detallado <ChevronRight size={16} />
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

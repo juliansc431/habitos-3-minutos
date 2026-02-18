@@ -57,6 +57,15 @@ export default function Dashboard({ user, onLogout }) {
                         <Target size={16} /> Explorar
                     </button>
                     <button
+                        onClick={() => handleTabChange('routines')}
+                        className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'routines'
+                            ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
+                            : 'text-slate-500 hover:text-slate-300'
+                            }`}
+                    >
+                        <Clock size={16} /> Rutinas
+                    </button>
+                    <button
                         onClick={() => handleTabChange('challenge')}
                         className={`flex-none px-6 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 snap-start ${activeTab === 'challenge'
                             ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg'
@@ -123,23 +132,22 @@ export default function Dashboard({ user, onLogout }) {
             />
 
             {/* Tab Content - Key forces fresh mount and animation */}
-            <div key={activeTab + (selectedRoutine ? '_routine' : '')} className={`w-full ${selectedRoutine ? 'pb-0' : 'pb-20'}`}>
-                {activeTab === 'explore' && !selectedCategory && !selectedRoutine && (
+            <div key={activeTab} className="w-full pb-20">
+                {activeTab === 'explore' && !selectedCategory && (
                     <HabitExplorer
                         onSelectCategory={(cat) => setSelectedCategory(cat)}
-                        onSelectRoutine={(routine) => setSelectedRoutine(routine)}
                     />
                 )}
-                {activeTab === 'explore' && selectedRoutine && (
+                {activeTab === 'routines' && (
                     <RoutineDetail
-                        onBack={() => setSelectedRoutine(null)}
+                        onBack={() => handleTabChange('explore')}
                         onStart={() => {
                             setSelectedCategory('calm');
-                            setSelectedRoutine(null);
+                            setActiveTab('explore');
                         }}
                     />
                 )}
-                {activeTab === 'explore' && selectedCategory && !selectedRoutine && (
+                {activeTab === 'explore' && selectedCategory && (
                     <div className="px-4 animate-slide-up">
                         <button
                             onClick={() => setSelectedCategory(null)}

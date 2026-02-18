@@ -83,7 +83,7 @@ export default function AuthScreen() {
         <div key="auth-container" className="w-full max-w-md pt-8">
             <div className="text-center mb-10">
                 <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] mb-4 opacity-70">
-                    Versión Actualizada v1.0.3 🚀
+                    Versión Estable v1.0.4 🛡️
                 </p>
                 <div className="text-6xl mb-4">⚡</div>
                 <h1 className="text-4xl font-bold mb-2 text-white">Micro-Hábitos</h1>
@@ -97,7 +97,7 @@ export default function AuthScreen() {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-500 uppercase px-1">Email</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase px-1">Correo Electrónico</label>
                         <input
                             name="email"
                             type="email"
@@ -176,7 +176,7 @@ export default function AuthScreen() {
             </div>
 
             <p className="mt-8 text-center text-[10px] text-slate-700 font-medium uppercase tracking-widest opacity-50">
-                v1.0.2 • 🔒 Datos Encriptados
+                v1.0.4 • Protocolo de Seguridad Activo
             </p>
         </div>
     );

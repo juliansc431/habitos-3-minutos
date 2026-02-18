@@ -82,7 +82,10 @@ export default function AuthScreen() {
     return (
         <div key="auth-container" className="w-full max-w-md pt-8">
             <div className="text-center mb-10">
-                <div className="animate-float text-6xl mb-4">⚡</div>
+                <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] mb-4 opacity-70">
+                    Versión Actualizada v1.0.3 🚀
+                </p>
+                <div className="text-6xl mb-4">⚡</div>
                 <h1 className="text-4xl font-bold mb-2 text-white">Micro-Hábitos</h1>
                 <p className="text-slate-400">Transforma tu vida en 3 minutos</p>
             </div>
@@ -129,7 +132,7 @@ export default function AuthScreen() {
                     </div>
 
                     {!isLogin && (
-                        <div className="space-y-1.5 animate-pop">
+                        <div className="space-y-1.5 border-t border-white/5 pt-4">
                             <label className="text-xs font-bold text-slate-500 uppercase px-1">Confirmar Contraseña</label>
                             <input
                                 name="confirmPassword"
@@ -144,7 +147,7 @@ export default function AuthScreen() {
                     )}
 
                     {error && (
-                        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-sm flex gap-2 animate-pop">
+                        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-sm flex gap-2">
                             <span className="shrink-0">⚠️</span>
                             <span>{error}</span>
                         </div>

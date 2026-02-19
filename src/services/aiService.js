@@ -31,7 +31,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
         genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    // Models to try - Expanded for quota survival
+    // Models to try - SDK Stage
     const modelOptions = [
         "models/gemini-1.5-flash-8b",
         "models/gemini-1.5-flash",
@@ -45,7 +45,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
 
     for (const modelId of modelOptions) {
         try {
-            console.log(`Intentando canalizar con SDK: ${modelId}...`);
+            console.log(`Intentando SDK: ${modelId}...`);
             const model = genAI.getGenerativeModel({ model: modelId });
 
             const chatHistory = [
@@ -74,23 +74,24 @@ export const chatWithCoach = async (userMessage, history = []) => {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.warn(`SDK falló (${modelId}):`, error.message);
+            console.warn(`SDK falló:`, error.message);
             lastError = error;
-            // No seguimos rotando si es un error fatal (ej: llave inválida)
             if (!error.message.includes("404") && !error.message.includes("quota")) break;
         }
     }
 
-    // --- HYPER REST BRIDGE v5.3 ---
-    console.log("Activando PUENTE REST v5.3...");
-    const restModels = ["gemini-1.5-flash-8b", "gemini-1.5-flash", "gemini-1.0-pro"];
+    // --- HYPER REST BRIDGE v5.4 ---
+    console.log("Activando PUENTE REST v5.4...");
+    const restModels = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash"];
     const apiVersions = ["v1beta", "v1"];
     let restDiagMsg = "";
 
     for (const v of apiVersions) {
         for (const mId of restModels) {
             try {
-                const restUrl = `https://generativelanguage.googleapis.com/${v}/models/${mId}:generateContent?key=${apiKey}`;
+                const cleanId = mId.startsWith("models/") ? mId : `models/${mId}`;
+                const restUrl = `https://generativelanguage.googleapis.com/${v}/${cleanId}:generateContent?key=${apiKey}`;
+
                 const restResponse = await fetch(restUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -106,14 +107,13 @@ export const chatWithCoach = async (userMessage, history = []) => {
                 }
 
                 if (restData.error) {
-                    restDiagMsg += `[${v}/${mId}: ${restData.error.message}] `;
-                    if (restData.error.message.includes("quota")) continue;
+                    restDiagMsg += `[${mId}: ${restData.error.message.substring(0, 40)}] `;
                 }
             } catch (e) {
-                restDiagMsg += `[${v}/${mId}: Red] `;
+                restDiagMsg += `[${mId}: Error Red] `;
             }
         }
     }
 
-    throw new Error(`BLOQUEO DE CUOTA (Limit 0): Google rechaza tu cuenta para el nivel gratuito. Detalles: ${restDiagMsg}. Sugerencia: Ve a https://aistudio.google.com/, pulsa en 'Settings' (engranaje) y verifica tu región o añade un método de pago (aunque sea gratis).`);
+    throw new Error(`BLOQUEO DE CUOTA (Limit 0): Google ha inhabilitado esta cuenta para usar IAs gratis. Detalles: ${restDiagMsg}. SOLUCIÓN DEFINITIVA: Crea una nueva API KEY con UN CORREO DE GOOGLE DISTINTO.`);
 };

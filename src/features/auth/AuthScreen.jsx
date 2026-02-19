@@ -176,7 +176,7 @@ export default function AuthScreen() {
             </div>
 
             <p className="mt-8 text-center text-[10px] text-slate-700 font-medium uppercase tracking-widest opacity-50">
-                v1.0.4 • Protocolo de Seguridad Activo
+                v1.0.5 • Protocolo de Seguridad Activo
             </p>
         </div>
     );

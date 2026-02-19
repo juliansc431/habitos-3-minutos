@@ -21,74 +21,67 @@ Contexto de la app:
 `;
 
 export const chatWithCoach = async (userMessage, history = []) => {
-    // CRITICAL: Trim and Validate API Key
     const rawKey = import.meta.env.VITE_GEMINI_API_KEY;
     const apiKey = rawKey ? rawKey.trim() : null;
 
-    if (!apiKey) {
-        throw new Error("Clave API NO DETECTADA. Revisa las variables en Vercel (VITE_GEMINI_API_KEY).");
-    }
+    if (!apiKey) throw new Error("Llave API no detectada en Vercel.");
+    if (!apiKey.startsWith("AIza")) throw new Error("Llave API inválida (debe empezar por AIza).");
 
-    // Google API Keys always start with AIza
-    if (!apiKey.startsWith("AIza")) {
-        throw new Error(`Clave API INVÁLIDA: Comienza por '${apiKey.substring(0, 4)}...', pero debe empezar por 'AIza'. Revisa lo que pegaste en Vercel.`);
-    }
-
-    if (apiKey.length < 35) {
-        throw new Error(`Clave API INCOMPLETA: Tiene ${apiKey.length} caracteres. Verifica que la copiaste entera de Google AI Studio.`);
-    }
-
-    // Initialize or refresh the client
     if (!genAI || (genAI.apiKey !== apiKey)) {
         genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    try {
-        // Use the most direct and stable model identifier
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Lista de modelos a probar por orden de preferencia
+    const modelOptions = [
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-8b",
+        "gemini-1.0-pro"
+    ];
 
-        const chatHistory = [
-            {
-                role: "user",
-                parts: [{ text: SYSTEM_PROMPT + "\n\nResponde 'ENTENDIDO' como Coach." }],
-            },
-            {
-                role: "model",
-                parts: [{ text: "ENTENDIDO. Guardián activado. ¿Qué hábito vamos a potenciar? ⚡✨" }],
-            },
-            ...history
-                .filter((msg, index) => index > 0)
-                .map(msg => ({
-                    role: msg.role === 'assistant' ? 'model' : 'user',
-                    parts: [{ text: msg.content }],
-                }))
-        ];
+    let lastError = null;
 
-        const chat = model.startChat({
-            history: chatHistory,
-            generationConfig: {
-                maxOutputTokens: 800,
-            },
-        });
-
-        const result = await chat.sendMessage(userMessage);
-        const response = await result.response;
-        return response.text();
-    } catch (error) {
-        console.error("Gemini Details:", error);
-
-        const errorMsg = error.message || "";
-        if (errorMsg.includes("404")) {
-            throw new Error("Error 404 (Google): Recurso no encontrado. Esto suele pasar si el modelo está deshabilitado para tu llave o la región no tiene servicio.");
-        }
-
-        // Final desperate attempt without chat session
+    for (const modelId of modelOptions) {
         try {
-            const basicModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const directResult = await basicModel.generateContent(userMessage);
-            return directResult.response.text();
-        } catch (f) {
-            throw new Error(`Fallo de conexión: ${errorMsg}`);
+            const model = genAI.getGenerativeModel({ model: modelId });
+
+            // Re-build history for each attempt
+            const chatHistory = [
+                {
+                    role: "user",
+                    parts: [{ text: SYSTEM_PROMPT + "\n\nResponde 'ENTENDIDO' como Coach." }],
+                },
+                {
+                    role: "model",
+                    parts: [{ text: "ENTENDIDO. Guardián activado." }],
+                },
+                ...history
+                    .filter((msg, index) => index > 0)
+                    .map(msg => ({
+                        role: msg.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: msg.content }],
+                    }))
+            ];
+
+            const chat = model.startChat({
+                history: chatHistory,
+                generationConfig: { maxOutputTokens: 800 }
+            });
+
+            const result = await chat.sendMessage(userMessage);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            console.warn(`Falló el modelo ${modelId}:`, error.message);
+            lastError = error;
+            // Si el error no es un 404 (ej: falta de llave), no seguimos probando
+            if (!error.message.includes("404")) break;
         }
     }
+
+    // Si llegamos aquí, todos fallaron
+    const errorDetail = lastError?.message || "Error desconocido";
+    if (errorDetail.includes("404")) {
+        throw new Error("ERROR GOOGLE: Tu cuenta no tiene acceso a los modelos Gemini. Por favor, crea una NUEVA API KEY en AI Studio y asegúrate de no tener restricciones de país.");
+    }
+    throw new Error(`Fallo de conexión: ${errorDetail}`);
 };

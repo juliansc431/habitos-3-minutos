@@ -21,19 +21,19 @@ Contexto de la app:
 `;
 
 export const chatWithCoach = async (userMessage, history = []) => {
+    // Re-check for API key in case it was set after initialization
     if (!genAI) {
-        throw new Error("API_KEY_MISSING");
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (apiKey) {
+            genAI = new GoogleGenerativeAI(apiKey);
+        } else {
+            throw new Error("API_KEY_MISSING");
+        }
     }
 
     try {
-        // Try the flash model first (faster, newer)
-        let model;
-        try {
-            model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
-        } catch (e) {
-            // Fallback to pro if flash fails to initialize
-            model = genAI.getGenerativeModel({ model: "models/gemini-1.0-pro" });
-        }
+        // Use clean model names (SDK handles the 'models/' prefix internally)
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // Gemini expects alternating roles: user -> model -> user...
         // We inject the SYSTEM_PROMPT as the first 'user' message to set the persona
@@ -57,7 +57,8 @@ export const chatWithCoach = async (userMessage, history = []) => {
         const chat = model.startChat({
             history: chatHistory,
             generationConfig: {
-                maxOutputTokens: 500,
+                maxOutputTokens: 800,
+                temperature: 0.7,
             },
         });
 
@@ -65,14 +66,16 @@ export const chatWithCoach = async (userMessage, history = []) => {
         const response = await result.response;
         return response.text();
     } catch (error) {
-        // If everything fails, try one last desperate attempt with the basic pro model
-        console.error("AI Service Error, attempting final recovery...", error);
+        console.error("AI Service Error:", error);
+
+        // Fallback to pro if flash fails
         try {
-            const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-            const result = await fallbackModel.generateContent(SYSTEM_PROMPT + "\n\nUser says: " + userMessage);
-            return result.response.text();
+            const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const result = await fallbackModel.generateContent(SYSTEM_PROMPT + "\n\nUsuario: " + userMessage);
+            const response = await result.response;
+            return response.text();
         } catch (finalError) {
-            throw new Error(`Fallo de conexión total: ${finalError.message}`);
+            throw new Error(`Error 404/Conexión: Verifica que tu VITE_GEMINI_API_KEY en Vercel sea correcta y no tenga espacios.`);
         }
     }
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import StatsCard from './StatsCard';
-import { Target, Flame, Heart, MessageCircle, Gem, Clock, BarChart3 } from 'lucide-react';
+import { Target, Flame, Heart, MessageCircle, Gem, Clock, BarChart3, Sparkles } from 'lucide-react';
 import HabitGenerator from '../habits/HabitGenerator';
 import DailyChallenge from '../habits/DailyChallenge';
 import AICoach from './AICoach';

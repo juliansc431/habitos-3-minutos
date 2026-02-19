@@ -5,7 +5,7 @@ import { chatWithCoach } from '../../services/aiService';
 
 export default function AICoach({ isOpen, onClose }) {
     const [messages, setMessages] = useState([
-        { role: 'assistant', content: '¡Hola! Soy tu coach de Micro-Hábitos. ¿En qué puedo ayudarte a mejorar tu rutina hoy? ⚡' }
+        { role: 'assistant', content: '¡Hola! Soy tu Guardián de Cristal. Estoy aquí para canalizar tu energía y perfeccionar tus hábitos. ¿En qué podemos trabajar hoy? 💎✨' }
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -34,9 +34,9 @@ export default function AICoach({ isOpen, onClose }) {
         } catch (err) {
             console.error('AI Error:', err);
             if (err.message === "API_KEY_MISSING") {
-                setError("La API Key no está configurada. Por favor, añádela en el archivo .env.");
+                setError("La esencia del guardián aún no ha sido activada (Falta API Key).");
             } else {
-                setError("Lo siento, hubo un problema conectando con mi cerebro artificial. Inténtalo de nuevo.");
+                setError("La conexión astral se ha interrumpido momentáneamente.");
             }
         } finally {
             setIsTyping(false);
@@ -46,83 +46,161 @@ export default function AICoach({ isOpen, onClose }) {
     return (
         <AnimatePresence>
             {isOpen && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="fixed bottom-24 right-4 left-4 md:left-auto md:w-96 z-[3000] flex flex-col h-[500px] glass-panel rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-indigo-500/30"
-                >
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-4 flex items-center justify-between text-white">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-white/20 p-2 rounded-full animate-pulse">
-                                <Bot size={24} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold flex items-center gap-1">
-                                    Coach IA <Sparkles size={14} className="text-yellow-300" />
-                                </h3>
-                                <p className="text-[10px] text-indigo-200">En línea para ayudarte</p>
-                            </div>
-                        </div>
-                        <button onClick={onClose} className="hover:bg-white/10 p-1 rounded-full transition-colors">
-                            <X size={20} />
-                        </button>
-                    </div>
+                <div className="fixed inset-0 z-[3000] flex items-end md:items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+                    />
 
-                    {/* Chat Messages */}
-                    <div
-                        ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50 backdrop-blur-2xl"
-                        style={{ scrollBehavior: 'smooth' }}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 100 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 100 }}
+                        className="relative w-full max-w-lg h-[80vh] md:h-[600px] flex flex-col glass-panel rounded-[3rem] overflow-hidden border-indigo-500/30 shadow-[0_0_100px_rgba(79,70,229,0.2)]"
                     >
-                        {messages.map((msg, i) => (
-                            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] p-3 rounded-2xl flex gap-3 ${msg.role === 'user'
-                                    ? 'bg-indigo-600 text-white rounded-tr-none'
-                                    : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700'
-                                    }`}>
-                                    {msg.role === 'assistant' && <Bot size={18} className="shrink-0 mt-1 text-indigo-400" />}
-                                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                                </div>
-                            </div>
-                        ))}
-                        {isTyping && (
-                            <div className="flex justify-start">
-                                <div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-700 flex gap-2">
-                                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
-                                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.3s]"></div>
-                                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.5s]"></div>
-                                </div>
-                            </div>
-                        )}
-                        {error && (
-                            <div className="flex justify-center flex-col items-center gap-2 p-4 bg-red-500/10 rounded-2xl border border-red-500/20 text-red-300 text-[10px] text-center">
-                                <AlertCircle size={16} />
-                                {error}
-                            </div>
-                        )}
-                    </div>
+                        {/* Character Visualization Area */}
+                        <div className="h-40 relative flex items-center justify-center overflow-hidden bg-gradient-to-b from-indigo-600/20 to-transparent">
+                            {/* Animated Background Particles */}
+                            {[...Array(6)].map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    animate={{
+                                        y: [0, -100],
+                                        opacity: [0, 1, 0],
+                                        scale: [0, 1.5, 0]
+                                    }}
+                                    transition={{
+                                        duration: 3 + Math.random() * 2,
+                                        repeat: Infinity,
+                                        delay: i * 0.5
+                                    }}
+                                    className="absolute w-1 h-1 bg-indigo-400 rounded-full"
+                                    style={{ left: `${15 + i * 15}%`, top: '80%' }}
+                                />
+                            ))}
 
-                    {/* Footer Input */}
-                    <form onSubmit={handleSend} className="p-4 bg-slate-900/80 border-t border-slate-800">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Escribe tu duda..."
-                                className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 pl-4 pr-12 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                            />
-                            <button
-                                type="submit"
-                                className="absolute right-2 top-2 p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors shadow-lg"
+                            {/* The Crystal Guardian */}
+                            <motion.div
+                                animate={{
+                                    y: [0, -10, 0],
+                                    rotate: [0, 5, -5, 0]
+                                }}
+                                transition={{
+                                    duration: 4,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className="relative z-10"
                             >
-                                <Send size={18} />
+                                <div className="w-20 h-20 relative">
+                                    {/* Core */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-2xl rotate-45 blur-sm opacity-50 animate-pulse" />
+                                    <div className="absolute inset-2 bg-white rounded-2xl rotate-45 shadow-[0_0_30px_rgba(255,255,255,0.8)] flex items-center justify-center overflow-hidden">
+                                        <div className="w-full h-full bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 relative">
+                                            {/* "Eye" */}
+                                            <motion.div
+                                                animate={{
+                                                    scaleY: [1, 0.1, 1],
+                                                }}
+                                                transition={{
+                                                    duration: 4,
+                                                    repeat: Infinity,
+                                                    repeatDelay: 2
+                                                }}
+                                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-2 bg-slate-900 rounded-full"
+                                            />
+                                        </div>
+                                    </div>
+                                    {/* Floating Orbits */}
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                        className="absolute -inset-4 border border-indigo-400/30 rounded-full"
+                                    />
+                                </div>
+                            </motion.div>
+
+                            <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/50 transition-all">
+                                <X size={20} />
                             </button>
+
+                            <div className="absolute bottom-4 text-center">
+                                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-indigo-300">Guardián de Hábitos</h3>
+                                <div className="flex items-center justify-center gap-1">
+                                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase">Entidad Conectada</span>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </motion.div>
+
+                        {/* Chat Messages */}
+                        <div
+                            ref={scrollRef}
+                            className="flex-1 overflow-y-auto p-6 space-y-6"
+                            style={{ scrollBehavior: 'smooth' }}
+                        >
+                            {messages.map((msg, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    key={i}
+                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div className={`max-w-[85%] p-4 rounded-3xl relative ${msg.role === 'user'
+                                        ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-tr-none shadow-xl'
+                                        : 'bg-white/5 text-slate-100 rounded-tl-none border border-white/10'
+                                        }`}>
+                                        <p className="text-sm leading-relaxed font-medium">{msg.content}</p>
+                                        <span className="text-[8px] opacity-40 mt-2 block font-black uppercase tracking-widest text-right">
+                                            {msg.role === 'user' ? 'Tú' : 'Guardián'}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            {isTyping && (
+                                <div className="flex justify-start">
+                                    <div className="bg-white/5 p-4 rounded-3xl rounded-tl-none border border-white/10 flex gap-1.5">
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                                    </div>
+                                </div>
+                            )}
+                            {error && (
+                                <div className="flex justify-center p-4">
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-2 flex items-center gap-2 text-red-300 text-[10px] font-bold uppercase tracking-wider">
+                                        <AlertCircle size={14} />
+                                        {error}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer Input */}
+                        <div className="p-6 bg-slate-950/50 backdrop-blur-xl border-t border-white/5">
+                            <form onSubmit={handleSend} className="relative group">
+                                <input
+                                    type="text"
+                                    placeholder="Canaliza tu consulta..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all placeholder:text-slate-600"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isTyping}
+                                    className="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center shadow-indigo-500/20"
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </form>
+                        </div>
+                    </motion.div>
+                </div>
             )}
         </AnimatePresence>
     );

@@ -112,14 +112,17 @@ export default function Dashboard({ user, onLogout }) {
                 <div className="absolute right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900/50 to-transparent pointer-events-none rounded-r-xl" />
             </div>
 
-            {/* Floating AI Button - Responsive labeling */}
+            {/* Floating AI Button - Crystal Guardian entry point */}
             <button
                 onClick={() => setIsAICoachOpen(true)}
-                className="fixed bottom-6 right-6 p-4 md:px-6 md:py-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-[0_10px_40px_rgba(79,70,229,0.5)] hover:scale-110 active:scale-90 transition-all z-[2500] animate-float flex items-center gap-3 border border-white/20"
+                className="fixed bottom-6 right-6 p-4 md:px-6 md:py-4 rounded-full bg-slate-900 text-indigo-400 shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:scale-110 active:scale-90 transition-all z-[2500] animate-float flex items-center gap-3 border-2 border-indigo-500/50"
             >
-                <MessageCircle size={24} fill="white" className="drop-shadow-sm" />
-                <span className="hidden md:block font-black text-sm uppercase tracking-widest">Coach IA</span>
-                <div className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-4 border-[#1a1a3e] animate-pulse"></div>
+                <div className="relative">
+                    <Gem size={24} fill="currentColor" className="drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+                    <Sparkles size={12} className="absolute -top-1 -right-1 text-white animate-pulse" />
+                </div>
+                <span className="hidden md:block font-black text-sm uppercase tracking-widest text-white">Guardián IA</span>
+                <div className="absolute top-0 right-0 w-4 h-4 bg-indigo-500 rounded-full border-4 border-[#1a1a3e] animate-pulse"></div>
             </button>
 
             <AICoach isOpen={isAICoachOpen} onClose={() => setIsAICoachOpen(false)} />

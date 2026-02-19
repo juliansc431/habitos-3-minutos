@@ -171,17 +171,29 @@ export default function AICoach({ isOpen, onClose }) {
                                 </div>
                             )}
                             {error && (
-                                <div className="flex justify-center p-4">
-                                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-2 flex items-center gap-2 text-red-300 text-[10px] font-bold uppercase tracking-wider">
-                                        <AlertCircle size={14} />
-                                        {error}
+                                <div className="flex flex-col items-center gap-4 p-4">
+                                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 flex flex-col items-center gap-2 text-red-300 text-[10px] font-bold uppercase tracking-wider text-center max-w-xs">
+                                        <div className="flex items-center gap-2">
+                                            <AlertCircle size={14} />
+                                            <span>Error de Canalización Astral</span>
+                                        </div>
+                                        <p className="opacity-60 normal-case font-medium leading-tight">{error}</p>
                                     </div>
+                                    <button
+                                        onClick={() => {
+                                            setError(null);
+                                            handleSend({ preventDefault: () => { }, target: { value: messages[messages.length - 1]?.content } });
+                                        }}
+                                        className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-indigo-300 transition-all active:scale-95"
+                                    >
+                                        Reintentar Conexión
+                                    </button>
                                 </div>
                             )}
                         </div>
 
                         {/* Footer Input */}
-                        <div className="p-6 bg-slate-950/50 backdrop-blur-xl border-t border-white/5">
+                        <div className="p-6 bg-slate-950/50 backdrop-blur-xl border-t border-white/5 relative">
                             <form onSubmit={handleSend} className="relative group">
                                 <input
                                     type="text"
@@ -198,6 +210,9 @@ export default function AICoach({ isOpen, onClose }) {
                                     <Send size={18} />
                                 </button>
                             </form>
+                            <div className="absolute -bottom-1 left-0 right-0 text-center">
+                                <span className="text-[7px] text-white/10 font-black tracking-[0.3em] uppercase">Guardian Protocol v3.0 stable</span>
+                            </div>
                         </div>
                     </motion.div>
                 </div>

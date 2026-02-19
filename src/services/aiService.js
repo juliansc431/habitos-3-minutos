@@ -26,7 +26,14 @@ export const chatWithCoach = async (userMessage, history = []) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Try the flash model first (faster, newer)
+        let model;
+        try {
+            model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+        } catch (e) {
+            // Fallback to pro if flash fails to initialize
+            model = genAI.getGenerativeModel({ model: "models/gemini-1.0-pro" });
+        }
 
         // Gemini expects alternating roles: user -> model -> user...
         // We inject the SYSTEM_PROMPT as the first 'user' message to set the persona
@@ -58,7 +65,14 @@ export const chatWithCoach = async (userMessage, history = []) => {
         const response = await result.response;
         return response.text();
     } catch (error) {
-        console.error("AI Service Error:", error);
-        throw error;
+        // If everything fails, try one last desperate attempt with the basic pro model
+        console.error("AI Service Error, attempting final recovery...", error);
+        try {
+            const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+            const result = await fallbackModel.generateContent(SYSTEM_PROMPT + "\n\nUser says: " + userMessage);
+            return result.response.text();
+        } catch (finalError) {
+            throw new Error(`Fallo de conexión total: ${finalError.message}`);
+        }
     }
 };

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, X } from 'lucide-react';
+import { Send, Bot, User, Sparkles, X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { chatWithCoach } from '../../services/aiService';
 
 export default function AICoach({ isOpen, onClose }) {
     const [messages, setMessages] = useState([
@@ -8,6 +8,7 @@ export default function AICoach({ isOpen, onClose }) {
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [error, setError] = useState(null);
     const scrollRef = useRef(null);
 
     useEffect(() => {
@@ -18,26 +19,27 @@ export default function AICoach({ isOpen, onClose }) {
 
     const handleSend = async (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || isTyping) return;
 
         const userMsg = { role: 'user', content: input };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsTyping(true);
+        setError(null);
 
-        // Mock AI Response (Simulating a premium coach)
-        setTimeout(() => {
-            const responses = [
-                "¡Excelente pregunta! La clave de los micro-hábitos es la constancia. Empieza tan pequeño que sea imposible fallar.",
-                "Recuerda que tu cerebro ama las recompensas. Beber un vaso de agua después de cepillarte los dientes es un gran 'habit stacking'.",
-                "No te castigues si fallas un día. Lo importante es no fallar el segundo día. ¡Tú puedes!",
-                "Para mejorar el enfoque, te recomiendo el reto de '30 minutos sin celular'. Verás como tu productividad se dispara."
-            ];
-            const randomMsg = responses[Math.floor(Math.random() * responses.length)];
-
-            setMessages(prev => [...prev, { role: 'assistant', content: randomMsg }]);
+        try {
+            const aiResponse = await chatWithCoach(input, messages);
+            setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+        } catch (err) {
+            console.error('AI Error:', err);
+            if (err.message === "API_KEY_MISSING") {
+                setError("La API Key no está configurada. Por favor, añádela en el archivo .env.");
+            } else {
+                setError("Lo siento, hubo un problema conectando con mi cerebro artificial. Inténtalo de nuevo.");
+            }
+        } finally {
             setIsTyping(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -76,8 +78,8 @@ export default function AICoach({ isOpen, onClose }) {
                         {messages.map((msg, i) => (
                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] p-3 rounded-2xl flex gap-3 ${msg.role === 'user'
-                                        ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700'
+                                    ? 'bg-indigo-600 text-white rounded-tr-none'
+                                    : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700'
                                     }`}>
                                     {msg.role === 'assistant' && <Bot size={18} className="shrink-0 mt-1 text-indigo-400" />}
                                     <p className="text-sm leading-relaxed">{msg.content}</p>
@@ -91,6 +93,12 @@ export default function AICoach({ isOpen, onClose }) {
                                     <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.3s]"></div>
                                     <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.5s]"></div>
                                 </div>
+                            </div>
+                        )}
+                        {error && (
+                            <div className="flex justify-center flex-col items-center gap-2 p-4 bg-red-500/10 rounded-2xl border border-red-500/20 text-red-300 text-[10px] text-center">
+                                <AlertCircle size={16} />
+                                {error}
                             </div>
                         )}
                     </div>

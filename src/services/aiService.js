@@ -31,16 +31,19 @@ export const chatWithCoach = async (userMessage, history = []) => {
         genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    // Models to try
+    // Models to try - Based on your successful diagnostic list!
     const modelOptions = [
-        "gemini-1.5-flash",
-        "gemini-pro"
+        "models/gemini-2.0-flash",
+        "models/gemini-1.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
     ];
 
     let lastError = null;
 
     for (const modelId of modelOptions) {
         try {
+            console.log(`Intentando canalizar con: ${modelId}...`);
             const model = genAI.getGenerativeModel({ model: modelId });
 
             const chatHistory = [
@@ -50,7 +53,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
                 },
                 {
                     role: "model",
-                    parts: [{ text: "ENTENDIDO. ¿Qué hábito vamos a potenciar? ⚡✨" }],
+                    parts: [{ text: "ENTENDIDO. Sistema de Guardián 2.0 activo. ¿Qué meta vamos a conquistar hoy? ⚡💎" }],
                 },
                 ...history
                     .filter((msg, index) => index > 0)
@@ -62,41 +65,29 @@ export const chatWithCoach = async (userMessage, history = []) => {
 
             const chat = model.startChat({
                 history: chatHistory,
-                generationConfig: { maxOutputTokens: 800 }
+                generationConfig: { maxOutputTokens: 1000 }
             });
 
             const result = await chat.sendMessage(userMessage);
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.warn(`Model ${modelId} failed:`, error.message);
+            console.warn(`Fallo con ${modelId}:`, error.message);
             lastError = error;
+            // Si funciona pero da otro error (ej: cuota), no seguimos rotando
             if (!error.message.includes("404")) break;
         }
     }
 
-    // --- NEW DIAGNOSTIC v4.5 ---
+    // --- DIAGNOSTIC CLAVE v5.0 ---
     let extraInfo = "";
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
         const devResponse = await fetch(url);
         const data = await devResponse.json();
+        if (data.error) extraInfo = `Google Status: ${data.error.message}`;
+        else if (data.models) extraInfo = `OK: Llave activa con ${data.models.length} modelos.`;
+    } catch (e) { extraInfo = "Error de red en diagnóstico."; }
 
-        if (data.error) {
-            extraInfo = `GOOGLE DIJO: ${data.error.message} (${data.error.status})`;
-        } else if (data.models) {
-            const list = data.models.map(m => m.name.replace('models/', '')).slice(0, 5).join(', ');
-            extraInfo = `Modelos Permitidos: [${list}]`;
-        } else {
-            extraInfo = "Google no devolvió lista de modelos ni error claro.";
-        }
-    } catch (e) {
-        extraInfo = "Error al intentar consultar modelos (Posible bloqueo de red o CORS).";
-    }
-
-    if (lastError?.message.includes("404")) {
-        throw new Error(`BLOQUEO 404: Google no encuentra el servicio para tu llave. ${extraInfo}. Sugerencia: Crea la llave en un NUEVO PROYECTO en AI Studio.`);
-    }
-
-    throw new Error(`Fallo de conexión: ${lastError?.message || "Desconocido"}. ${extraInfo}`);
+    throw new Error(`ERROR DE CONEXIÓN: Ningún modelo respondió (404). ${extraInfo}. Verifica que la API Key sea de un proyecto de Google Cloud con Generative Language API activada.`);
 };

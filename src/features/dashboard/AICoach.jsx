@@ -211,7 +211,7 @@ export default function AICoach({ isOpen, onClose }) {
                                 </button>
                             </form>
                             <div className="absolute -bottom-1 left-0 right-0 text-center">
-                                <span className="text-[7px] text-white/10 font-black tracking-[0.3em] uppercase">Guardian Protocol v5.0 Gemini 2.0 Ready</span>
+                                <span className="text-[7px] text-white/10 font-black tracking-[0.3em] uppercase">Guardian Protocol v5.1 REST Bridge Active</span>
                             </div>
                         </div>
                     </motion.div>

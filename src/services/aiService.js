@@ -43,7 +43,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
 
     for (const modelId of modelOptions) {
         try {
-            console.log(`Intentando canalizar con: ${modelId}...`);
+            console.log(`Intentando canalizar con SDK: ${modelId}...`);
             const model = genAI.getGenerativeModel({ model: modelId });
 
             const chatHistory = [
@@ -72,22 +72,36 @@ export const chatWithCoach = async (userMessage, history = []) => {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.warn(`Fallo con ${modelId}:`, error.message);
+            console.warn(`SDK falló (${modelId}):`, error.message);
             lastError = error;
             // Si funciona pero da otro error (ej: cuota), no seguimos rotando
             if (!error.message.includes("404")) break;
         }
     }
 
-    // --- DIAGNOSTIC CLAVE v5.0 ---
-    let extraInfo = "";
+    // --- ULTIMATE REST BRIDGE v5.1 ---
+    console.log("Activando PUENTE REST de emergencia...");
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-        const devResponse = await fetch(url);
-        const data = await devResponse.json();
-        if (data.error) extraInfo = `Google Status: ${data.error.message}`;
-        else if (data.models) extraInfo = `OK: Llave activa con ${data.models.length} modelos.`;
-    } catch (e) { extraInfo = "Error de red en diagnóstico."; }
+        const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const restResponse = await fetch(restUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }]
+                }]
+            })
+        });
 
-    throw new Error(`ERROR DE CONEXIÓN: Ningún modelo respondió (404). ${extraInfo}. Verifica que la API Key sea de un proyecto de Google Cloud con Generative Language API activada.`);
+        const restData = await restResponse.json();
+        if (restData.candidates && restData.candidates[0]?.content?.parts[0]?.text) {
+            return restData.candidates[0].content.parts[0].text;
+        } else if (restData.error) {
+            throw new Error(`REST ERROR: ${restData.error.message}`);
+        }
+    } catch (restErr) {
+        console.error("Rest Bridge Falló:", restErr);
+    }
+
+    throw new Error(`ERROR CRÍTICO: Google no reconoce los modelos a pesar de que tu llave es válida (47 modelos detectados). Esto suele ser un bloqueo regional de Google Cloud. Prueba a crear la llave con una cuenta de Google distinta.`);
 };

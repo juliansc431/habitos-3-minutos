@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { chatWithCoach } from '../../services/aiService';

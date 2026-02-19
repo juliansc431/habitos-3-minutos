@@ -31,11 +31,10 @@ export const chatWithCoach = async (userMessage, history = []) => {
         genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    // Lista de modelos a probar por orden de preferencia
+    // Models to try
     const modelOptions = [
         "gemini-1.5-flash",
-        "gemini-1.5-flash-8b",
-        "gemini-1.0-pro"
+        "gemini-pro"
     ];
 
     let lastError = null;
@@ -44,7 +43,6 @@ export const chatWithCoach = async (userMessage, history = []) => {
         try {
             const model = genAI.getGenerativeModel({ model: modelId });
 
-            // Re-build history for each attempt
             const chatHistory = [
                 {
                     role: "user",
@@ -52,7 +50,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
                 },
                 {
                     role: "model",
-                    parts: [{ text: "ENTENDIDO. Guardián activado." }],
+                    parts: [{ text: "ENTENDIDO. ¿Qué hábito vamos a potenciar? ⚡✨" }],
                 },
                 ...history
                     .filter((msg, index) => index > 0)
@@ -71,17 +69,26 @@ export const chatWithCoach = async (userMessage, history = []) => {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.warn(`Falló el modelo ${modelId}:`, error.message);
+            console.warn(`Model ${modelId} failed:`, error.message);
             lastError = error;
-            // Si el error no es un 404 (ej: falta de llave), no seguimos probando
             if (!error.message.includes("404")) break;
         }
     }
 
-    // Si llegamos aquí, todos fallaron
-    const errorDetail = lastError?.message || "Error desconocido";
-    if (errorDetail.includes("404")) {
-        throw new Error("ERROR GOOGLE: Tu cuenta no tiene acceso a los modelos Gemini. Por favor, crea una NUEVA API KEY en AI Studio y asegúrate de no tener restricciones de país.");
+    // DIAGNOSTIC: If all failed with 404, list what models GOOGLE sees
+    if (lastError?.message.includes("404")) {
+        try {
+            // Attempt to list models to see what's available for this key
+            const url = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
+            const devResponse = await fetch(url);
+            const data = await devResponse.json();
+            const availableModels = data.models ? data.models.map(m => m.name.replace('models/', '')).slice(0, 5).join(', ') : "Ninguno encontrado";
+
+            throw new Error(`Google NO encuentra el modelo. Tu llave tiene acceso a: [${availableModels}]. Si la lista está vacía, tu API Key no tiene permisos. Revisa AI Studio.`);
+        } catch (diagError) {
+            throw new Error(`BLOQUEO DE GOOGLE (404). Tu llave no tiene acceso a Gemini o estás en una región restringida. Sugerencia: Crea una NUEVA API KEY.`);
+        }
     }
-    throw new Error(`Fallo de conexión: ${errorDetail}`);
+
+    throw new Error(`Fallo de conexión: ${lastError?.message || "Desconocido"}`);
 };

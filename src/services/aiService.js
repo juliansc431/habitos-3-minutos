@@ -75,20 +75,28 @@ export const chatWithCoach = async (userMessage, history = []) => {
         }
     }
 
-    // DIAGNOSTIC: If all failed with 404, list what models GOOGLE sees
-    if (lastError?.message.includes("404")) {
-        try {
-            // Attempt to list models to see what's available for this key
-            const url = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
-            const devResponse = await fetch(url);
-            const data = await devResponse.json();
-            const availableModels = data.models ? data.models.map(m => m.name.replace('models/', '')).slice(0, 5).join(', ') : "Ninguno encontrado";
+    // --- NEW DIAGNOSTIC v4.5 ---
+    let extraInfo = "";
+    try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        const devResponse = await fetch(url);
+        const data = await devResponse.json();
 
-            throw new Error(`Google NO encuentra el modelo. Tu llave tiene acceso a: [${availableModels}]. Si la lista está vacía, tu API Key no tiene permisos. Revisa AI Studio.`);
-        } catch (diagError) {
-            throw new Error(`BLOQUEO DE GOOGLE (404). Tu llave no tiene acceso a Gemini o estás en una región restringida. Sugerencia: Crea una NUEVA API KEY.`);
+        if (data.error) {
+            extraInfo = `GOOGLE DIJO: ${data.error.message} (${data.error.status})`;
+        } else if (data.models) {
+            const list = data.models.map(m => m.name.replace('models/', '')).slice(0, 5).join(', ');
+            extraInfo = `Modelos Permitidos: [${list}]`;
+        } else {
+            extraInfo = "Google no devolvió lista de modelos ni error claro.";
         }
+    } catch (e) {
+        extraInfo = "Error al intentar consultar modelos (Posible bloqueo de red o CORS).";
     }
 
-    throw new Error(`Fallo de conexión: ${lastError?.message || "Desconocido"}`);
+    if (lastError?.message.includes("404")) {
+        throw new Error(`BLOQUEO 404: Google no encuentra el servicio para tu llave. ${extraInfo}. Sugerencia: Crea la llave en un NUEVO PROYECTO en AI Studio.`);
+    }
+
+    throw new Error(`Fallo de conexión: ${lastError?.message || "Desconocido"}. ${extraInfo}`);
 };

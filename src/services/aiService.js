@@ -21,18 +21,24 @@ Contexto de la app:
 `;
 
 export const chatWithCoach = async (userMessage, history = []) => {
-    // Re-check for API key in case it was set after initialization
-    if (!genAI) {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        if (apiKey) {
-            genAI = new GoogleGenerativeAI(apiKey);
-        } else {
-            throw new Error("API_KEY_MISSING");
-        }
+    // Re-check and re-init for reliability
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    if (!apiKey) {
+        throw new Error("Clave API no encontrada en el sistema (VITE_GEMINI_API_KEY).");
+    }
+
+    // Safety check: Gemini keys are usually ~39 chars starting with AIza
+    if (apiKey.length < 20) {
+        throw new Error(`La Clave API parece inválida (Longitud: ${apiKey.length}). Verifica en Vercel.`);
+    }
+
+    if (!genAI || (genAI.apiKey !== apiKey)) {
+        genAI = new GoogleGenerativeAI(apiKey);
     }
 
     try {
-        // Use clean model names (SDK handles the 'models/' prefix internally)
+        // Most compatible model identifier
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // Gemini expects alternating roles: user -> model -> user...
@@ -58,7 +64,6 @@ export const chatWithCoach = async (userMessage, history = []) => {
             history: chatHistory,
             generationConfig: {
                 maxOutputTokens: 800,
-                temperature: 0.7,
             },
         });
 
@@ -66,16 +71,15 @@ export const chatWithCoach = async (userMessage, history = []) => {
         const response = await result.response;
         return response.text();
     } catch (error) {
-        console.error("AI Service Error:", error);
+        console.error("Gemini SDK Error:", error);
 
-        // Fallback to pro if flash fails
+        // Final fallback to alias 'gemini-pro'
         try {
             const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
-            const result = await fallbackModel.generateContent(SYSTEM_PROMPT + "\n\nUsuario: " + userMessage);
-            const response = await result.response;
-            return response.text();
-        } catch (finalError) {
-            throw new Error(`Error 404/Conexión: Verifica que tu VITE_GEMINI_API_KEY en Vercel sea correcta y no tenga espacios.`);
+            const result = await fallbackModel.generateContent(SYSTEM_PROMPT + "\n\nUser: " + userMessage);
+            return result.response.text();
+        } catch (finalErr) {
+            throw new Error(`Error Fatal de Google: ${finalErr.message}. Verifica tu API Key en AI Studio.`);
         }
     }
 };

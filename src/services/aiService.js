@@ -79,29 +79,35 @@ export const chatWithCoach = async (userMessage, history = []) => {
         }
     }
 
-    // --- ULTIMATE REST BRIDGE v5.1 ---
-    console.log("Activando PUENTE REST de emergencia...");
-    try {
-        const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const restResponse = await fetch(restUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }]
-                }]
-            })
-        });
+    // --- HYPER REST BRIDGE v5.2 ---
+    console.log("Activando HIPER PUENTE REST...");
+    const restModels = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    let restDiagMsg = "";
 
-        const restData = await restResponse.json();
-        if (restData.candidates && restData.candidates[0]?.content?.parts[0]?.text) {
-            return restData.candidates[0].content.parts[0].text;
-        } else if (restData.error) {
-            throw new Error(`REST ERROR: ${restData.error.message}`);
+    for (const mId of restModels) {
+        try {
+            const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/${mId}:generateContent?key=${apiKey}`;
+            const restResponse = await fetch(restUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
+                })
+            });
+
+            const restData = await restResponse.json();
+
+            if (restData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return restData.candidates[0].content.parts[0].text;
+            }
+
+            if (restData.error) {
+                restDiagMsg += `[${mId}: ${restData.error.message}] `;
+            }
+        } catch (e) {
+            restDiagMsg += `[${mId}: Falla de red] `;
         }
-    } catch (restErr) {
-        console.error("Rest Bridge Falló:", restErr);
     }
 
-    throw new Error(`ERROR CRÍTICO: Google no reconoce los modelos a pesar de que tu llave es válida (47 modelos detectados). Esto suele ser un bloqueo regional de Google Cloud. Prueba a crear la llave con una cuenta de Google distinta.`);
+    throw new Error(`BLOQUEO TOTAL GOOGLE: Tu llave está activa pero rechaza la conexión. Detalles: ${restDiagMsg || "Sin datos"}. Esto suele ser por CUENTA RESTRINGIDA o REGIÓN. Sugerencia final: Usa una CUENTA DE GOOGLE distinta.`);
 };

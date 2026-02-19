@@ -36,7 +36,7 @@ export default function AICoach({ isOpen, onClose }) {
             if (err.message === "API_KEY_MISSING") {
                 setError("La esencia del guardián aún no ha sido activada (Falta API Key).");
             } else {
-                setError("La conexión astral se ha interrumpido momentáneamente.");
+                setError(`Error de canalización: ${err.message || 'Desconocido'}`);
             }
         } finally {
             setIsTyping(false);

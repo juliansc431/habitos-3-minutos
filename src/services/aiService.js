@@ -26,29 +26,26 @@ export const chatWithCoach = async (userMessage, history = []) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: SYSTEM_PROMPT
+        });
 
-        // Gemini expects alternating roles starting with 'user'.
-        // We skip the first assistant message from history to keep it simple and clean.
+        // Gemini expects alternating roles: user -> model -> user...
+        // Filter the history to ensure we only have alternating pairs.
+        // We exclude the initial greeting which is hardcoded in the component.
         const chatHistory = history
-            .filter((msg, index) => index > 0) // Skip initial greeting
+            .filter((msg, index) => index > 0)
             .map(msg => ({
                 role: msg.role === 'assistant' ? 'model' : 'user',
                 parts: [{ text: msg.content }],
             }));
 
         const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: SYSTEM_PROMPT + "\n\nEntendido, soy tu coach de Micro-Hábitos. ¡Hola!" }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "¡Hola! Estoy listo para optimizar tu potencial. ¿Qué hábito vamos a perfeccionar hoy? ⚡🧠" }],
-                },
-                ...chatHistory
-            ],
+            history: chatHistory,
+            generationConfig: {
+                maxOutputTokens: 500,
+            },
         });
 
         const result = await chat.sendMessage(userMessage);

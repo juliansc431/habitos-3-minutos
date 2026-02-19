@@ -31,12 +31,14 @@ export const chatWithCoach = async (userMessage, history = []) => {
         genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    // Models to try - Based on your successful diagnostic list!
+    // Models to try - Expanded for quota survival
     const modelOptions = [
-        "models/gemini-2.0-flash",
+        "models/gemini-1.5-flash-8b",
         "models/gemini-1.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "models/gemini-2.0-flash",
+        "gemini-1.5-flash-8b",
+        "gemini-1.5-flash",
+        "gemini-pro"
     ];
 
     let lastError = null;
@@ -74,40 +76,44 @@ export const chatWithCoach = async (userMessage, history = []) => {
         } catch (error) {
             console.warn(`SDK falló (${modelId}):`, error.message);
             lastError = error;
-            // Si funciona pero da otro error (ej: cuota), no seguimos rotando
-            if (!error.message.includes("404")) break;
+            // No seguimos rotando si es un error fatal (ej: llave inválida)
+            if (!error.message.includes("404") && !error.message.includes("quota")) break;
         }
     }
 
-    // --- HYPER REST BRIDGE v5.2 ---
-    console.log("Activando HIPER PUENTE REST...");
-    const restModels = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    // --- HYPER REST BRIDGE v5.3 ---
+    console.log("Activando PUENTE REST v5.3...");
+    const restModels = ["gemini-1.5-flash-8b", "gemini-1.5-flash", "gemini-1.0-pro"];
+    const apiVersions = ["v1beta", "v1"];
     let restDiagMsg = "";
 
-    for (const mId of restModels) {
-        try {
-            const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/${mId}:generateContent?key=${apiKey}`;
-            const restResponse = await fetch(restUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
-                })
-            });
+    for (const v of apiVersions) {
+        for (const mId of restModels) {
+            try {
+                const restUrl = `https://generativelanguage.googleapis.com/${v}/models/${mId}:generateContent?key=${apiKey}`;
+                const restResponse = await fetch(restUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
+                    })
+                });
 
-            const restData = await restResponse.json();
+                const restData = await restResponse.json();
 
-            if (restData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return restData.candidates[0].content.parts[0].text;
+                if (restData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    return restData.candidates[0].content.parts[0].text;
+                }
+
+                if (restData.error) {
+                    restDiagMsg += `[${v}/${mId}: ${restData.error.message}] `;
+                    if (restData.error.message.includes("quota")) continue;
+                }
+            } catch (e) {
+                restDiagMsg += `[${v}/${mId}: Red] `;
             }
-
-            if (restData.error) {
-                restDiagMsg += `[${mId}: ${restData.error.message}] `;
-            }
-        } catch (e) {
-            restDiagMsg += `[${mId}: Falla de red] `;
         }
     }
 
-    throw new Error(`BLOQUEO TOTAL GOOGLE: Tu llave está activa pero rechaza la conexión. Detalles: ${restDiagMsg || "Sin datos"}. Esto suele ser por CUENTA RESTRINGIDA o REGIÓN. Sugerencia final: Usa una CUENTA DE GOOGLE distinta.`);
+    throw new Error(`BLOQUEO DE CUOTA (Limit 0): Google rechaza tu cuenta para el nivel gratuito. Detalles: ${restDiagMsg}. Sugerencia: Ve a https://aistudio.google.com/, pulsa en 'Settings' (engranaje) y verifica tu región o añade un método de pago (aunque sea gratis).`);
 };

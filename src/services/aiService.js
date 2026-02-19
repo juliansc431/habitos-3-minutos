@@ -28,11 +28,14 @@ export const chatWithCoach = async (userMessage, history = []) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // Convert history to Gemini format
-        const chatHistory = history.map(msg => ({
-            role: msg.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: msg.content }],
-        }));
+        // Gemini expects alternating roles starting with 'user'.
+        // We skip the first assistant message from history to keep it simple and clean.
+        const chatHistory = history
+            .filter((msg, index) => index > 0) // Skip initial greeting
+            .map(msg => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }],
+            }));
 
         const chat = model.startChat({
             history: [

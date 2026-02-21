@@ -1,63 +1,17 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const SYSTEM_PROMPT = `
-Eres el "Coach de Micro-Hábitos Express", un asistente de hábitos conciso y motivador.
+Eres el "Coach de Micro-Hábitos Express", un asistente de hábitos motivador y directo.
 
-REGLA ABSOLUTA DE BREVEDAD (JAMÁS la rompas):
-- MÁXIMO 2 oraciones por respuesta. Nunca más.
-- Saludo simple ("hola", "hi"): UNA oración de bienvenida + UNA pregunta corta. Ejemplo: "¡Hola! ¿En qué hábito trabajamos hoy? 💎"
-- NUNCA hagas listas numeradas a menos que el usuario las pida explícitamente.
-- NUNCA uses subtítulos ni negritas en exceso.
-- Sé como un mensaje de WhatsApp: breve, directo y cálido.
-
-Tu rol:
-- Experto en hábitos de 3 minutos.
-- Usa 1-2 emojis máximo (⚡, 🧠, 💎).
-- Redirige temas off-topic con UNA frase.
-- La app se llama "Hábitos 3 Minutos" (XP y Cristales por completar tareas).
+REGLA DE RESPUESTA (síguela siempre):
+- Responde en máximo 3-4 oraciones. Nunca más.
+- Para saludos ("hola"): Una bienvenida breve y UNA pregunta. Sin listas.
+- Cuando el usuario pida un hábito: Descríbelo en 2-3 oraciones y haz una pregunta de seguimiento.
+- Usa 1-2 emojis por respuesta (⚡, 🧠, 💎).
+- NO uses negritas, listas numeradas ni subtítulos salvo que el usuario lo pida.
+- La app se llama "Hábitos 3 Minutos" (los usuarios ganan XP y Cristales).
 `;
 
-// Truncates model response to first 1-2 natural sentences (no lists, no markdown headers)
-const truncateResponse = (text) => {
-    if (!text) return text;
-
-    // Remove markdown headers (###, ##, #)
-    let clean = text.replace(/^#{1,3}\s+.*/gm, '').trim();
-
-    // Remove numbered/bullet lists - take only text before first list item
-    const listStart = clean.search(/\n\s*[\d]+\.\s|\n\s*[-*]\s/);
-    if (listStart > 0) {
-        clean = clean.substring(0, listStart).trim();
-    }
-
-    // Take only first paragraph (before double newline)
-    const firstParagraph = clean.split(/\n\n/)[0].trim();
-
-    // Find first sentence end (keep max 2 sentences)
-    const sentenceEnd = firstParagraph.search(/[.!?][^.!?]{0,5}[.!?]|[.!?]\s/);
-    if (sentenceEnd > 20) {
-        // Find end of second sentence
-        const secondEnd = firstParagraph.search(new RegExp(`[^]{${sentenceEnd + 1}}[.!?]`));
-        if (secondEnd > sentenceEnd && secondEnd < 350) {
-            clean = firstParagraph.substring(0, secondEnd + 1).trim();
-        } else {
-            clean = firstParagraph.substring(0, sentenceEnd + 1).trim();
-        }
-    } else {
-        clean = firstParagraph;
-    }
-
-    // Clean up excessive bold markdown
-    clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
-
-    // Hard cap at 300 chars as final safety net
-    if (clean.length > 320) {
-        const cutAt = clean.lastIndexOf(' ', 317);
-        clean = clean.substring(0, cutAt > 200 ? cutAt : 317) + '…';
-    }
-
-    return clean;
-};
 
 export const chatWithCoach = async (userMessage, history = []) => {
 
@@ -105,11 +59,10 @@ export const chatWithCoach = async (userMessage, history = []) => {
             const model = activeGenAI.getGenerativeModel({ model: modelId });
             const chat = model.startChat({
                 history: chatHistory,
-                generationConfig: { maxOutputTokens: 200, temperature: 0.7 }
+                generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
             });
             const result = await chat.sendMessage(userMessage);
-            const fullText = result.response.text();
-            return truncateResponse(fullText);
+            return result.response.text();
 
         } catch (error) {
             const msg = error.message || "";

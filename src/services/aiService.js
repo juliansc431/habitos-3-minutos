@@ -1,8 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
-
 const SYSTEM_PROMPT = `
 Eres el "Coach de Micro-Hábitos Express", un experto en neurociencia aplicada, psicología del comportamiento y el método de Hábitos Atómicos. 
 Tu objetivo es ayudar al usuario a construir rutinas poderosas de máximo 3 minutos.
@@ -27,93 +24,100 @@ export const chatWithCoach = async (userMessage, history = []) => {
     if (!apiKey) throw new Error("Llave API no detectada en Vercel.");
     if (!apiKey.startsWith("AIza")) throw new Error("Llave API inválida (debe empezar por AIza).");
 
-    let activeGenAI = new GoogleGenerativeAI(apiKey);
+    const activeGenAI = new GoogleGenerativeAI(apiKey);
 
-    // Prioritize gemini-2.0-flash (only model confirmed available on this account)
+    const chatHistory = [
+        {
+            role: "user",
+            parts: [{ text: SYSTEM_PROMPT + "\n\nResponde 'ENTENDIDO' como Coach." }],
+        },
+        {
+            role: "model",
+            parts: [{ text: "ENTENDIDO. Sistema de Guardián 2.0 activo. ¿Qué meta vamos a conquistar hoy? ⚡💎" }],
+        },
+        ...history
+            .filter((msg, index) => index > 0)
+            .map(msg => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }],
+            }))
+    ];
+
+    // Try all known 2.0 variants (different quota buckets)
     const modelOptions = [
         "gemini-2.0-flash",
-        "gemini-2.0-flash-exp",
         "gemini-2.0-flash-lite",
+        "gemini-2.0-flash-exp",
+        "gemini-2.0-flash-thinking-exp-01-21",
         "gemini-1.5-flash",
-        "gemini-pro"
+        "gemini-1.5-pro",
     ];
+
+    let diagDetails = "";
 
     for (const modelId of modelOptions) {
         try {
-            console.log(`Intentando SDK: ${modelId}...`);
+            console.log(`SDK → ${modelId}...`);
             const model = activeGenAI.getGenerativeModel({ model: modelId });
-
-            const chatHistory = [
-                {
-                    role: "user",
-                    parts: [{ text: SYSTEM_PROMPT + "\n\nResponde 'ENTENDIDO' como Coach." }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "ENTENDIDO. Sistema de Guardián 2.0 activo. ¿Qué meta vamos a conquistar hoy? ⚡💎" }],
-                },
-                ...history
-                    .filter((msg, index) => index > 0)
-                    .map(msg => ({
-                        role: msg.role === 'assistant' ? 'model' : 'user',
-                        parts: [{ text: msg.content }],
-                    }))
-            ];
-
             const chat = model.startChat({
                 history: chatHistory,
-                generationConfig: { maxOutputTokens: 1000 }
+                generationConfig: { maxOutputTokens: 800 }
             });
-
             const result = await chat.sendMessage(userMessage);
-            const response = await result.response;
-            return response.text();
+            return result.response.text();
         } catch (error) {
-            console.warn(`SDK falló (${modelId}):`, error.message);
-            if (!error.message.includes("404") && !error.message.includes("quota") && !error.message.includes("not found")) break;
+            const msg = error.message || "";
+            console.warn(`SDK falló (${modelId}): ${msg.substring(0, 80)}`);
+            diagDetails += `[SDK-${modelId}: ${msg.substring(0, 40)}] `;
+            // Only skip to next model if it's a retriable error
+            const isRetriable = msg.includes("404") || msg.includes("quota") ||
+                msg.includes("not found") || msg.includes("RESOURCE_EXHAUSTED");
+            if (!isRetriable) break;
         }
     }
 
-    // --- REST BRIDGE v5.6 - gemini-2.0-flash priority ---
-    console.log("Activando PUENTE REST v5.6...");
-    let restDiagMsg = "";
+    // REST Bridge v5.7
+    console.log("REST Bridge v5.7...");
+    const restConfigs = [
+        { v: "v1beta", m: "gemini-2.0-flash" },
+        { v: "v1beta", m: "gemini-2.0-flash-lite" },
+        { v: "v1beta", m: "gemini-2.0-flash-exp" },
+        { v: "v1beta", m: "gemini-1.5-flash" },
+        { v: "v1", m: "gemini-2.0-flash" },
+        { v: "v1", m: "gemini-2.0-flash-lite" },
+    ];
 
-    const restModels = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-2.0-flash-lite"];
-    const apiVersions = ["v1beta", "v1"];
-
-    for (const v of apiVersions) {
-        for (const mId of restModels) {
-            try {
-                const restUrl = `https://generativelanguage.googleapis.com/${v}/models/${mId}:generateContent?key=${apiKey}`;
-                const restResponse = await fetch(restUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
-                    })
-                });
-
-                const restData = await restResponse.json();
-
-                if (restData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    return restData.candidates[0].content.parts[0].text;
-                }
-
-                if (restData.error) {
-                    restDiagMsg += `[${mId}: ${restData.error.message.substring(0, 50)}] `;
-                }
-            } catch (e) {
-                restDiagMsg += `[${mId}: Error Red] `;
+    for (const { v, m } of restConfigs) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/${v}/models/${m}:generateContent?key=${apiKey}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
+                })
+            });
+            const data = await res.json();
+            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
             }
+            if (data.error) {
+                diagDetails += `[REST-${m}: ${data.error.message.substring(0, 50)}] `;
+            }
+        } catch (e) {
+            diagDetails += `[REST-${m}: network] `;
         }
     }
 
-    // Check if it's a rate limit issue (temporary) vs permanent block
-    const isRateLimit = restDiagMsg.includes("quota") || restDiagMsg.includes("exceeded");
+    // Classify error for user-friendly message
+    const isQuota = diagDetails.toLowerCase().includes("quota") || diagDetails.toLowerCase().includes("exhausted");
+    const isNotFound = diagDetails.toLowerCase().includes("not found");
 
-    if (isRateLimit) {
-        throw new Error(`⏱️ LÍMITE POR MINUTO ALCANZADO: La cuenta gratuita de Google permite ~15 mensajes por minuto. Por favor, espera 60 segundos y vuelve a intentarlo. ¡El Guardián estará listo! 💎`);
+    if (isQuota) {
+        throw new Error(`CUOTA AGOTADA: La cuenta tiene cuota insuficiente. Diagnóstico: ${diagDetails}. Solución: Ve a https://console.cloud.google.com/ → APIs → Gemini API → verifica que esté HABILITADA y que el proyecto ${diagDetails.match(/project[s/: ]*(\d+)/)?.[1] || "nuevo"} no tenga restricciones.`);
     }
-
-    throw new Error(`Error de conexión con Google. Detalles: ${restDiagMsg}. Intenta de nuevo en 1 minuto.`);
+    if (isNotFound) {
+        throw new Error(`MODELOS NO DISPONIBLES: ${diagDetails}. El proyecto de Google Cloud puede necesitar activar la Gemini API manualmente en: console.cloud.google.com`);
+    }
+    throw new Error(`Error de conexión. Detalles: ${diagDetails}`);
 };

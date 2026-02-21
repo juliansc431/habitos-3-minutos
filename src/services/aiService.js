@@ -27,26 +27,21 @@ export const chatWithCoach = async (userMessage, history = []) => {
     if (!apiKey) throw new Error("Llave API no detectada en Vercel.");
     if (!apiKey.startsWith("AIza")) throw new Error("Llave API inválida (debe empezar por AIza).");
 
-    if (!genAI || (genAI.apiKey !== apiKey)) {
-        genAI = new GoogleGenerativeAI(apiKey);
-    }
+    let activeGenAI = new GoogleGenerativeAI(apiKey);
 
-    // Models to try - SDK Stage
+    // Prioritize gemini-2.0-flash (only model confirmed available on this account)
     const modelOptions = [
-        "models/gemini-1.5-flash-8b",
-        "models/gemini-1.5-flash",
-        "models/gemini-2.0-flash",
-        "gemini-1.5-flash-8b",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-exp",
+        "gemini-2.0-flash-lite",
         "gemini-1.5-flash",
         "gemini-pro"
     ];
 
-    let lastError = null;
-
     for (const modelId of modelOptions) {
         try {
             console.log(`Intentando SDK: ${modelId}...`);
-            const model = genAI.getGenerativeModel({ model: modelId });
+            const model = activeGenAI.getGenerativeModel({ model: modelId });
 
             const chatHistory = [
                 {
@@ -74,24 +69,22 @@ export const chatWithCoach = async (userMessage, history = []) => {
             const response = await result.response;
             return response.text();
         } catch (error) {
-            console.warn(`SDK falló:`, error.message);
-            lastError = error;
-            if (!error.message.includes("404") && !error.message.includes("quota")) break;
+            console.warn(`SDK falló (${modelId}):`, error.message);
+            if (!error.message.includes("404") && !error.message.includes("quota") && !error.message.includes("not found")) break;
         }
     }
 
-    // --- HYPER REST BRIDGE v5.4 ---
-    console.log("Activando PUENTE REST v5.4...");
-    const restModels = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash"];
-    const apiVersions = ["v1beta", "v1"];
+    // --- REST BRIDGE v5.6 - gemini-2.0-flash priority ---
+    console.log("Activando PUENTE REST v5.6...");
     let restDiagMsg = "";
+
+    const restModels = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-2.0-flash-lite"];
+    const apiVersions = ["v1beta", "v1"];
 
     for (const v of apiVersions) {
         for (const mId of restModels) {
             try {
-                const cleanId = mId.startsWith("models/") ? mId : `models/${mId}`;
-                const restUrl = `https://generativelanguage.googleapis.com/${v}/${cleanId}:generateContent?key=${apiKey}`;
-
+                const restUrl = `https://generativelanguage.googleapis.com/${v}/models/${mId}:generateContent?key=${apiKey}`;
                 const restResponse = await fetch(restUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -107,7 +100,7 @@ export const chatWithCoach = async (userMessage, history = []) => {
                 }
 
                 if (restData.error) {
-                    restDiagMsg += `[${mId}: ${restData.error.message.substring(0, 40)}] `;
+                    restDiagMsg += `[${mId}: ${restData.error.message.substring(0, 50)}] `;
                 }
             } catch (e) {
                 restDiagMsg += `[${mId}: Error Red] `;
@@ -115,5 +108,12 @@ export const chatWithCoach = async (userMessage, history = []) => {
         }
     }
 
-    throw new Error(`BLOQUEO DE CUOTA (Limit 0): Google ha inhabilitado esta cuenta para usar IAs gratis. Detalles: ${restDiagMsg}. SOLUCIÓN DEFINITIVA: Crea una nueva API KEY con UN CORREO DE GOOGLE DISTINTO.`);
+    // Check if it's a rate limit issue (temporary) vs permanent block
+    const isRateLimit = restDiagMsg.includes("quota") || restDiagMsg.includes("exceeded");
+
+    if (isRateLimit) {
+        throw new Error(`⏱️ LÍMITE POR MINUTO ALCANZADO: La cuenta gratuita de Google permite ~15 mensajes por minuto. Por favor, espera 60 segundos y vuelve a intentarlo. ¡El Guardián estará listo! 💎`);
+    }
+
+    throw new Error(`Error de conexión con Google. Detalles: ${restDiagMsg}. Intenta de nuevo en 1 minuto.`);
 };

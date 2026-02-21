@@ -211,7 +211,7 @@ export default function AICoach({ isOpen, onClose }) {
                                 </button>
                             </form>
                             <div className="absolute -bottom-1 left-0 right-0 text-center">
-                                <span className="text-[7px] text-white/10 font-black tracking-[0.3em] uppercase">Guardian Protocol v5.8 Gemini 3 Flash</span>
+                                <span className="text-[7px] text-white/10 font-black tracking-[0.3em] uppercase">Guardian Protocol v5.9 Natural Response</span>
                             </div>
                         </div>
                     </motion.div>

@@ -70,7 +70,15 @@ export const chatWithCoach = async (userMessage, history = []) => {
     }
 
     const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    // gemini-3-flash-preview is a thinking model:
+    // parts[0] may have thought:true (internal reasoning) — we skip those
+    // We join all non-thinking text parts to get the real response
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const text = parts
+        .filter(p => !p.thought && typeof p.text === 'string')
+        .map(p => p.text)
+        .join('');
 
     if (!text) throw new Error("Respuesta vacía del modelo.");
 

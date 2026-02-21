@@ -1,122 +1,78 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// aiService.js — REST directo a Gemini API (sin SDK, compatible con gemini-3-flash-preview)
+// v6.0 — Direct REST, no SDK dependency
 
-const SYSTEM_PROMPT = `
-Eres el "Coach de Micro-Hábitos Express", un asistente de hábitos motivador y directo.
+const SYSTEM_PROMPT = `Eres el "Coach de Micro-Hábitos Express", un asistente motivador y directo.
 
-REGLA DE RESPUESTA (síguela siempre):
+REGLA DE RESPUESTA:
 - Responde en máximo 3-4 oraciones. Nunca más.
 - Para saludos ("hola"): Una bienvenida breve y UNA pregunta. Sin listas.
-- Cuando el usuario pida un hábito: Descríbelo en 2-3 oraciones y haz una pregunta de seguimiento.
+- Cuando el usuario pida un hábito: Descríbelo brevemente y haz una pregunta de seguimiento.
 - Usa 1-2 emojis por respuesta (⚡, 🧠, 💎).
-- NO uses negritas, listas numeradas ni subtítulos salvo que el usuario lo pida.
-- La app se llama "Hábitos 3 Minutos" (los usuarios ganan XP y Cristales).
-`;
+- NO uses negritas, listas numeradas ni subtítulos.
+- La app se llama "Hábitos 3 Minutos" (los usuarios ganan XP y Cristales).`;
 
+const GEMINI_MODEL = "gemini-3-flash-preview";
+const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const chatWithCoach = async (userMessage, history = []) => {
-
     const rawKey = import.meta.env.VITE_GEMINI_API_KEY;
     const apiKey = rawKey ? rawKey.trim() : null;
 
-    if (!apiKey) throw new Error("Llave API no detectada en Vercel.");
-    if (!apiKey.startsWith("AIza")) throw new Error("Llave API inválida (debe empezar por AIza).");
+    if (!apiKey) throw new Error("Llave API no configurada en Vercel.");
+    if (!apiKey.startsWith("AIza")) throw new Error("Llave API inválida.");
 
-    const activeGenAI = new GoogleGenerativeAI(apiKey);
+    // Build conversation history for the API
+    const contents = [];
 
-    const chatHistory = [
-        {
-            role: "user",
-            parts: [{ text: SYSTEM_PROMPT + "\n\nResponde 'ENTENDIDO' como Coach." }],
-        },
-        {
-            role: "model",
-            parts: [{ text: "ENTENDIDO. Sistema de Guardián 2.0 activo. ¿Qué meta vamos a conquistar hoy? ⚡💎" }],
-        },
-        ...history
-            .filter((msg, index) => index > 0)
-            .map(msg => ({
-                role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }],
-            }))
-    ];
+    // Add system context as first user turn (Gemini 1.x style)
+    contents.push({
+        role: "user",
+        parts: [{ text: SYSTEM_PROMPT + "\n\nConfirma con 'ENTENDIDO'." }]
+    });
+    contents.push({
+        role: "model",
+        parts: [{ text: "ENTENDIDO. ¿En qué hábito trabajamos hoy? 💎" }]
+    });
 
-    // Try all known variants - gemini-3-flash confirmed active in AI Studio!
-    const modelOptions = [
-        "gemini-3-flash-preview",
-        "gemini-3.0-flash-preview",
-        "gemini-2.5-flash-preview",
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-2.0-flash-exp",
-        "gemini-1.5-flash",
-    ];
-
-    let diagDetails = "";
-
-    for (const modelId of modelOptions) {
-        try {
-            console.log(`SDK → ${modelId}...`);
-            const model = activeGenAI.getGenerativeModel({ model: modelId });
-            const chat = model.startChat({
-                history: chatHistory,
-                generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
-            });
-            const result = await chat.sendMessage(userMessage);
-            return result.response.text();
-
-        } catch (error) {
-            const msg = error.message || "";
-            console.warn(`SDK falló (${modelId}): ${msg.substring(0, 80)}`);
-            diagDetails += `[SDK-${modelId}: ${msg.substring(0, 40)}] `;
-            // Only skip to next model if it's a retriable error
-            const isRetriable = msg.includes("404") || msg.includes("quota") ||
-                msg.includes("not found") || msg.includes("RESOURCE_EXHAUSTED");
-            if (!isRetriable) break;
-        }
+    // Add conversation history (skip the first welcome message)
+    for (let i = 1; i < history.length; i++) {
+        const msg = history[i];
+        contents.push({
+            role: msg.role === "assistant" ? "model" : "user",
+            parts: [{ text: msg.content }]
+        });
     }
 
-    // REST Bridge v5.7
-    console.log("REST Bridge v5.7...");
-    const restConfigs = [
-        { v: "v1beta", m: "gemini-2.0-flash" },
-        { v: "v1beta", m: "gemini-2.0-flash-lite" },
-        { v: "v1beta", m: "gemini-2.0-flash-exp" },
-        { v: "v1beta", m: "gemini-1.5-flash" },
-        { v: "v1", m: "gemini-2.0-flash" },
-        { v: "v1", m: "gemini-2.0-flash-lite" },
-    ];
+    // Add current user message
+    contents.push({
+        role: "user",
+        parts: [{ text: userMessage }]
+    });
 
-    for (const { v, m } of restConfigs) {
-        try {
-            const url = `https://generativelanguage.googleapis.com/${v}/models/${m}:generateContent?key=${apiKey}`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userMessage }] }]
-                })
-            });
-            const data = await res.json();
-            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
+    const url = `${API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents,
+            generationConfig: {
+                maxOutputTokens: 400,
+                temperature: 0.7,
             }
-            if (data.error) {
-                diagDetails += `[REST-${m}: ${data.error.message.substring(0, 50)}] `;
-            }
-        } catch (e) {
-            diagDetails += `[REST-${m}: network] `;
-        }
+        })
+    });
+
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+        throw new Error(`API Error: ${errMsg}`);
     }
 
-    // Classify error for user-friendly message
-    const isQuota = diagDetails.toLowerCase().includes("quota") || diagDetails.toLowerCase().includes("exhausted");
-    const isNotFound = diagDetails.toLowerCase().includes("not found");
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (isQuota) {
-        throw new Error(`CUOTA AGOTADA: La cuenta tiene cuota insuficiente. Diagnóstico: ${diagDetails}. Solución: Ve a https://console.cloud.google.com/ → APIs → Gemini API → verifica que esté HABILITADA y que el proyecto ${diagDetails.match(/project[s/: ]*(\d+)/)?.[1] || "nuevo"} no tenga restricciones.`);
-    }
-    if (isNotFound) {
-        throw new Error(`MODELOS NO DISPONIBLES: ${diagDetails}. El proyecto de Google Cloud puede necesitar activar la Gemini API manualmente en: console.cloud.google.com`);
-    }
-    throw new Error(`Error de conexión. Detalles: ${diagDetails}`);
+    if (!text) throw new Error("Respuesta vacía del modelo.");
+
+    return text;
 };

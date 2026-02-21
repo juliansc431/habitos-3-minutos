@@ -17,7 +17,50 @@ Tu rol:
 - La app se llama "Hábitos 3 Minutos" (XP y Cristales por completar tareas).
 `;
 
+// Truncates model response to first 1-2 natural sentences (no lists, no markdown headers)
+const truncateResponse = (text) => {
+    if (!text) return text;
+
+    // Remove markdown headers (###, ##, #)
+    let clean = text.replace(/^#{1,3}\s+.*/gm, '').trim();
+
+    // Remove numbered/bullet lists - take only text before first list item
+    const listStart = clean.search(/\n\s*[\d]+\.\s|\n\s*[-*]\s/);
+    if (listStart > 0) {
+        clean = clean.substring(0, listStart).trim();
+    }
+
+    // Take only first paragraph (before double newline)
+    const firstParagraph = clean.split(/\n\n/)[0].trim();
+
+    // Find first sentence end (keep max 2 sentences)
+    const sentenceEnd = firstParagraph.search(/[.!?][^.!?]{0,5}[.!?]|[.!?]\s/);
+    if (sentenceEnd > 20) {
+        // Find end of second sentence
+        const secondEnd = firstParagraph.search(new RegExp(`[^]{${sentenceEnd + 1}}[.!?]`));
+        if (secondEnd > sentenceEnd && secondEnd < 350) {
+            clean = firstParagraph.substring(0, secondEnd + 1).trim();
+        } else {
+            clean = firstParagraph.substring(0, sentenceEnd + 1).trim();
+        }
+    } else {
+        clean = firstParagraph;
+    }
+
+    // Clean up excessive bold markdown
+    clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
+
+    // Hard cap at 300 chars as final safety net
+    if (clean.length > 320) {
+        const cutAt = clean.lastIndexOf(' ', 317);
+        clean = clean.substring(0, cutAt > 200 ? cutAt : 317) + '…';
+    }
+
+    return clean;
+};
+
 export const chatWithCoach = async (userMessage, history = []) => {
+
     const rawKey = import.meta.env.VITE_GEMINI_API_KEY;
     const apiKey = rawKey ? rawKey.trim() : null;
 
@@ -65,7 +108,9 @@ export const chatWithCoach = async (userMessage, history = []) => {
                 generationConfig: { maxOutputTokens: 200, temperature: 0.7 }
             });
             const result = await chat.sendMessage(userMessage);
-            return result.response.text();
+            const fullText = result.response.text();
+            return truncateResponse(fullText);
+
         } catch (error) {
             const msg = error.message || "";
             console.warn(`SDK falló (${modelId}): ${msg.substring(0, 80)}`);

@@ -43,14 +43,15 @@ export const chatWithCoach = async (userMessage, history = []) => {
             }))
     ];
 
-    // Try all known 2.0 variants (different quota buckets)
+    // Try all known variants - gemini-3-flash confirmed active in AI Studio!
     const modelOptions = [
+        "gemini-3-flash-preview",
+        "gemini-3.0-flash-preview",
+        "gemini-2.5-flash-preview",
         "gemini-2.0-flash",
         "gemini-2.0-flash-lite",
         "gemini-2.0-flash-exp",
-        "gemini-2.0-flash-thinking-exp-01-21",
         "gemini-1.5-flash",
-        "gemini-1.5-pro",
     ];
 
     let diagDetails = "";
